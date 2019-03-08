@@ -1,4 +1,4 @@
 @echo off
-path E:\COMPILADORES\bin
+path F:\COMPILADOR_MINGW\bin
 mingw32-make.exe
 pause
