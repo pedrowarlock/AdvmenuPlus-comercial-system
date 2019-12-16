@@ -9,3 +9,6 @@ Comercial system menu
 
 -Compilar version DOS/Windows:
  MINGW (Windows): https://sourceforge.net/projects/advmenuplus/files/Compilers/Mingw-advmenuplus.zip/download
+ 
+ -Compilar Autoit file v3:
+ https://www.autoitscript.com/site/autoit/downloads/
