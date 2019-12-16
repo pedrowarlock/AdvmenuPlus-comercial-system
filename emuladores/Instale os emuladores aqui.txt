@@ -1,0 +1,3 @@
+!!!MAME!!!
+Na pasta MAME, coloque seu emulador MAME, é importante que o executavel tenha o nome de "mameui32.exe"
+

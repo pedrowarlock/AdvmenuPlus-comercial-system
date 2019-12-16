@@ -1,0 +1,151 @@
+<?xml version="1.0"?>
+<menu>
+      <emu name="ARCADE">
+              <description>(01)ARCADE</description>
+              <cloneof></cloneof>
+              <manufacturer></manufacturer>
+              <year></year>
+      </emu>
+       <emu name="NEOGEO">
+              <description>(02)NEOGEO</description>
+              <cloneof></cloneof>
+              <manufacturer></manufacturer>
+              <year></year>
+      </emu>
+       <emu name="CAPCOM">
+              <description>(03)CAPCOM</description>
+              <cloneof></cloneof>
+              <manufacturer></manufacturer>
+              <year></year>
+      </emu>
+		<emu name="JOGOSDELUTA">
+              <description>(04)JOGOSDELUTA</description>
+              <cloneof></cloneof>
+              <manufacturer></manufacturer>
+              <year></year> 
+		</emu>
+		<emu name="JOGOSDENAVE">
+              <description>(05)JOGOSDENAVE</description>
+              <cloneof></cloneof>
+              <manufacturer></manufacturer>
+              <year></year>
+		</emu>
+		<emu name="TAITOTYPEX">
+              <description>(06)TAITOTYPE X</description>
+              <cloneof></cloneof>
+              <manufacturer></manufacturer>
+              <year></year>
+		</emu>
+		<emu name="JOGOSDECOMPUTADOR">
+              <description>(07)JOGOSDECOMPUTADOR</description>
+              <cloneof></cloneof>
+              <manufacturer></manufacturer>
+              <year></year>
+		</emu>
+		<emu name="hackers">
+              <description>(21)HACKERS</description>
+              <cloneof></cloneof>
+              <manufacturer></manufacturer>
+              <year></year>
+		</emu>
+		<emu name="PLAYSTATION1">
+              <description>(16)PLAYSTATION1</description>
+              <cloneof></cloneof>
+              <manufacturer></manufacturer>
+              <year></year>
+		</emu>
+		<emu name="PLAYSTATION2">
+              <description>(17)PLAYSTATION2</description>
+              <cloneof></cloneof>
+              <manufacturer></manufacturer>
+              <year></year>
+		</emu>
+		<emu name="PSP">
+              <description>(18)PSP</description>
+              <cloneof></cloneof>
+              <manufacturer></manufacturer>
+              <year></year>
+		</emu>
+		<emu name="SUPERNINTENDO">
+              <description>(08)SUPER NINTENDO</description>
+              <cloneof></cloneof>
+              <manufacturer></manufacturer>
+              <year></year>
+		</emu>
+		<emu name="NINTENDO64">
+              <description>(13)NINTENDO64</description>
+              <cloneof></cloneof>
+              <manufacturer></manufacturer>
+              <year></year>
+		</emu>
+		<emu name="NINTENDINHO">
+		
+              <description>(09)NINTENDINHO</description>
+              <cloneof></cloneof>
+              <manufacturer></manufacturer>
+              <year></year>
+		</emu>
+		<emu name="GAMEBOY">
+              <description>(10)GAMEBOY</description>
+              <cloneof></cloneof>
+              <manufacturer></manufacturer>
+              <year></year>
+		</emu>
+		<emu name="GAMEBOYCOLOR">
+              <description>(11)GAMEBOYCOLOR</description>
+              <cloneof></cloneof>
+              <manufacturer></manufacturer>
+              <year></year>
+		</emu>
+		<emu name="GAMEBOYADVANCE">
+              <description>(12)GAMEBOYADVANCE</description>
+              <cloneof></cloneof>
+              <manufacturer></manufacturer>
+              <year></year>
+		</emu>
+		
+		<emu name="NINTENDOWII">
+              <description>(14)NINTENDO WII</description>
+              <cloneof></cloneof>
+              <manufacturer></manufacturer>
+              <year></year>
+		</emu>
+		<emu name="NINTENDOWIITriforce">
+              <description>(15)NINTENDO WII Triforce</description>
+              <cloneof></cloneof>
+              <manufacturer></manufacturer>
+              <year></year>
+		</emu>
+		<emu name="NINTENDOWIIU">
+              <description>(16)NINTENDO WIIU</description>
+              <cloneof></cloneof>
+              <manufacturer></manufacturer>
+              <year></year>
+		</emu>
+	
+		<emu name="MASTERSYSTEM">
+              <description>(19)MASTERSYSTEM</description>
+              <cloneof></cloneof>
+              <manufacturer></manufacturer>
+              <year></year>
+		</emu>
+		<emu name="MEGADRIVE">
+              <description>(20)MEGADRIVE</description>
+              <cloneof></cloneof>
+              <manufacturer></manufacturer>
+              <year></year>
+		</emu>
+		<emu name="sega32x">
+              <description>(21)sega32x</description>
+              <cloneof></cloneof>
+              <manufacturer></manufacturer>
+              <year></year>
+		</emu>
+		<emu name="dreamcast">
+              <description>(21)Dreamcast</description>
+              <cloneof></cloneof>
+              <manufacturer></manufacturer>
+              <year></year>
+		</emu>
+		
+</menu>

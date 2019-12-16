@@ -1,0 +1,169 @@
+---------------------------
+  JoyToKey change history  
+---------------------------
+
+Ver 5.2.1
+* Bug fix: garbled characters for allow keys
+
+
+Ver 5.2.0
+* Support the combination of keyboard and mouse click
+  Ex) SHIFT+Click, CTRL+Click
+
+  In order to specify a mouse click in keyboard assignment window,
+  please right-click the entry box.
+
+* Bug fix: minor bug fix for 5.1.2
+
+
+Ver 5.1.2
+* Bug fix: SHIFT + arrow keys were not properly processed.
+
+
+Ver 5.1.1
+* Mouse cursor emulation with analog sticks is further improved.
+
+
+Ver 5.1.0
+* Mouse cursor emulation is now much smoother with analog sticks,
+  by using a continuous acceleration without a threshold.
+
+* In case analog stick input has been wrong, axis mapping can be
+  manually specified.
+  (Menu: "Preferences" -> "Configure joysticks")
+
+* In case you have multiple joysticks and want to always use one
+  of them as "Joystick 2" (or any other joystick number), you can
+  define a priority/preferred number for each device.
+  (Menu: "Preferences" -> "Configure joysticks")
+
+* Miscellaneous bug fixes.
+
+
+Ver 5.0.3
+* (Improvement) Re-detect joysticks after resuming from sleep.
+
+
+Ver 5.0.2
+* Bug fix: Preference "Highlight buttons when JoyToKey is active" was not
+  properly saved.
+
+
+Ver 5.0.1
+* Added a menu "Help -> Overview"
+* Added a button "Edit button assignment"
+* Minor bug fixes
+
+
+Ver 5.0
+* Support for different key assignments based on analog stick input level.
+
+* Support for different key assignments based on button hold duration.
+
+* Support for rotating key assignments.  For example, whenever the same
+  button is pressed, its key assignment can rotate like 
+  "A -> B -> A -> B -> A ..."
+
+* Enhanced auto-repeat key functionality.
+  The following auto-repeat definitions are newly possible:
+  - "1.5 repeats per second"
+  - "one repeat per 123.4 seconds"
+  - "auto-repeat only after 500 milli-seconds"
+
+* When the main window of JoyToKey is activated and joystick buttons are
+  pressed, those buttons will be highlighted in the main window so that
+  you can easily see which button corresponds to which row in the config.
+  (You can change it back to the old behaviour from menu setting)
+
+* When the window is minimized, icon will be kept in the taskbar by default.
+  If you prefer the old behavoir and want to hide it from taskbar, you can
+  change it back to the old behavior from settings menu.
+
+* Added a comment field for each button definition.
+  For example, you can record a memo like "This button is used for Jump".
+
+* Support for copying joystick configration from one to another.
+  Right-click "Joystick 1" header in the main menu, to open a popup menu.
+
+* Support for at maximum 4 key assignments for each button.
+
+* Various small bug fixes
+
+
+Ver 4.6
+* You can choose the default behavior when the target application switches 
+  to non-associated appliation.
+
+* When you temporarily switch to the virtual joystick configuration while 
+  some button is being pressed, the pressed state will be kept without 
+  release event if its original key config and the new key config are the
+  same.  (e.g. if the arrow key is assigned for both the original joystick1 
+  config and the virtual joystick3 config, then switching between joystick1 
+  and joystick3 won't trigger unnecessary release event)
+
+
+From ver 3.x to ver4.5.x
+* It became a shareware soft
+
+* Support for associating config files with applications
+  It can automatically switch active configuration file based on running 
+applications.
+
+* Support dynamic acceleration of mouse cursor movement
+  If you use mouse cursor emulation with analog stick, the speed 
+sensitivity can be accelerated at certain threshold.
+
+* Support 4-way and 8-way assignment for POV control
+
+* Auto repeat functionality, ranging from very slow repeat (1 time per 
+15 minutes) up to 60 times per second (with 2x processing mode)
+
+* Support for toggle button
+  e.g. use it for drag&drop with mouse emulation, or for truly automated 
+repeat of keys even when you are away from PC.
+
+* Window size became re-sizable
+
+* Open / Close main window by left-clicking task tray icon 
+  (right-click to open popup menu)
+
+* JoyToKey can be started even when joystick is not connected
+  And it will automatically detect the newly connected joystick.
+  (NOTE: it only works the first joystick.  If you connect the second one
+   or more, please press "detect" button manually from preferences panel)
+
+* Several additions in the menu such as
+  - copy configuration file
+  - open game controller setting from control panel
+  - suspend / resume temporalily
+  - 2x processing mode (if you want to minimize the input latency, sacrificing extra CPU load)
+  - generate debug log
+
+
+Ver3.x highlights
+* Under Windows 2000 or later (including XP), JoyToKey now supports
+  some applications using DirectInput.
+
+* Choosing L-Shift, R-Shift, L-Ctrl, ... from the list, you can make
+  a distinction between left and right keys.
+  (Be careful to select L-Shift or R-Shift or (normal) Shift!
+   You have to choose the correct one for the application!)
+
+* Support for POV switches.
+
+* Support for "Switch to the other configuration file" function.
+
+* The configuration file can be easily selected and switched to
+  at task tray menu, without opening and activating JoyToKey window.
+
+* The firstly activated configuration file can now be specified
+  by command line option at start up time.
+
+* Analog stick can be configured in detail by modifying JoyToKey.ini
+  file directly:
+
+  "AnalogDeadZone"  (ranges 0 to 10000: default 1000)
+    The center area where subtle input from analog stick is ignored.
+
+  "AnalogSaturation"  (ranges 0 to 10000: default 10000)
+    The surrounding area from which additional inputs are saturated.

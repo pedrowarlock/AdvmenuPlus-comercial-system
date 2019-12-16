@@ -1,0 +1,10 @@
+2019/11/11 13:24:40 Info   Windows Version = 6.2
+2019/11/11 13:24:40 Info   Loaded VistaAPI.dll (Utils\Utils.cpp#154)
+2019/11/11 13:24:40 Info   Starting JoyToKey Ver5.2.1 (AppInfo.cpp#21)
+2019/11/11 13:24:40 Info   ExeFile=F:\ADVMENU\ADVMENU\auxiliar\Joytokey\JoyToKey.exe (AppInfo.cpp#22)
+2019/11/11 13:24:40 Info   IniFile=F:\ADVMENU\ADVMENU\auxiliar\Joytokey\JoyToKey.ini (AppInfo.cpp#93)
+2019/11/11 13:24:40 Info   LicenseKey "" is not valid
+2019/11/11 13:24:40 Info   0 joysticks are detected (Joystick.cpp#100)
+2019/11/11 13:24:40 Info   ConfigDir=F:\ADVMENU\ADVMENU\auxiliar\Joytokey\*.cfg (ConfigFileManager.cpp#43)
+2019/11/11 13:24:40 Info   Failed to find AppLink.dat (AppLink\AppLinkManager.cpp#32)
+2019/11/11 13:24:40 Info   Starting in a minimized mode (JoyToKey.cpp#37)
