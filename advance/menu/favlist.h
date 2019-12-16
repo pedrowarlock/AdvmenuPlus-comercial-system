@@ -41,7 +41,7 @@ public :
 	
 	void name_set(const std::string& A);
 	const std::string& name_get() const { return name; }
-
+	
 	void game_insert(const std::string& A);
 	void game_remove(const std::string& A);
 	void game_move(const std::string& A, bool bistate);
@@ -49,8 +49,8 @@ public :
 	bool has_emu(const std::string& emu);
 	bool has_game(const std::string& game);
 
-	bool save() const;
-	bool import() const;
+	bool save(const std::string& favorites_dir) const;
+	bool import(const std::string& favorites_dir) const;
 };
 
 typedef std::list<favorite*> pfavorites_container;

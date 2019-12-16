@@ -23,9 +23,6 @@
 #include "category.h"
 #include "game.h"
 
-#include <iostream>
-#include <fstream>
-
 using namespace std;
 
 // ------------------------------------------------------------------------
@@ -50,7 +47,7 @@ category::category(const string& Aname, bool Aundefined) : name(Aname), state(fa
 // ------------------------------------------------------------------------
 // category container
 
-#define CATEGORY_UNDEFINED "<Lista De Jogos>"
+#define CATEGORY_UNDEFINED "-LISTA COMPLETA-"
 
 pcategory_container::pcategory_container()  {
 	category* c = new category(CATEGORY_UNDEFINED, true);

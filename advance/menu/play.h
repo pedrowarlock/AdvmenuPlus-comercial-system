@@ -47,6 +47,7 @@ bool play_mute_get();
 void play_foreground_effect_begin(const resource& s);
 void play_foreground_effect_stop(const resource& s);
 void play_foreground_effect_end(const resource& s);
+void play_foreground_fliper_key(const resource& s);
 void play_foreground_effect_key(const resource& s);
 void play_foreground_effect_start(const resource& s);
 void play_foreground_stop();

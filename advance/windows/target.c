@@ -561,8 +561,7 @@ void target_flush(void)
 	}
 
 	if (*TARGET.buffer_err) {
-		//MessageBox(NULL, TARGET.buffer_err, "Advance Error", MB_ICONERROR);
-		MessageBox(NULL, TARGET.buffer_err, "Arcade Erro! Wdiversoes@gmail.com", MB_ICONINFORMATION);
+		MessageBox(NULL, TARGET.buffer_err, "Advance Error", MB_ICONINFORMATION); //Warlock troca de icone MB_ICONERROR
 		*TARGET.buffer_err = 0;
 	}
 	

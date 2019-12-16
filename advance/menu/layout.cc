@@ -15,7 +15,7 @@
  * 
  * You should have received a copy of the GNU General Public License along
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
- */ 
+ */
 
 #include "layout.h"
 
@@ -106,6 +106,52 @@ void layout::custom_bar_info_5_font_set(const string& A)
 
 	custom_bar_info_5_font = A_path;
 }
+
+void layout::custom_bar_info_6_font_set(const string& A)
+{
+	string A_path = A;
+	if (A_path != ""  && A_path != "none" && A_path != "default" && A_path != "auto")
+		A_path = file_config_file_custom(A.c_str());
+
+	custom_bar_info_6_font = A_path;
+}
+
+void layout::custom_bar_info_7_font_set(const string& A)
+{
+	string A_path = A;
+	if (A_path != ""  && A_path != "none" && A_path != "default" && A_path != "auto")
+		A_path = file_config_file_custom(A.c_str());
+
+	custom_bar_info_7_font = A_path;
+}
+
+void layout::custom_bar_info_8_font_set(const string& A)
+{
+	string A_path = A;
+	if (A_path != ""  && A_path != "none" && A_path != "default" && A_path != "auto")
+		A_path = file_config_file_custom(A.c_str());
+
+	custom_bar_info_8_font = A_path;
+}
+
+void layout::custom_bar_info_9_font_set(const string& A)
+{
+	string A_path = A;
+	if (A_path != ""  && A_path != "none" && A_path != "default" && A_path != "auto")
+		A_path = file_config_file_custom(A.c_str());
+
+	custom_bar_info_9_font = A_path;
+}
+ 
+void layout::custom_bar_info_10_font_set(const string& A)
+{
+	string A_path = A;
+	if (A_path != ""  && A_path != "none" && A_path != "default" && A_path != "auto")
+		A_path = file_config_file_custom(A.c_str());
+
+	custom_bar_info_10_font = A_path;
+}
+
 
 void layout::custom_menu_font_path_set(const string& A)
 {

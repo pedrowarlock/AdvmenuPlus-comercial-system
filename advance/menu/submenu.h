@@ -22,9 +22,25 @@
 #define __SUBMENU_H
 
 #include "mconfig.h"
-
+bool layout_read(config_state& rs, const std::string& custom_path);
+bool layouts_load(config_state& rs);
+void run_background(config_state& rs);
 void run_help(config_state& rs);
 int run_volume(config_state& rs);
+int run_topoemu(config_state& rs);
+int run_sairocioso(config_state& rs);
+int run_autoenvio(config_state& rs);
+int run_reboot(config_state& rs);
+int run_selectheme(config_state& rs);
+int run_delayintro(config_state& rs);
+int run_contador_no_jogo(config_state& rs);
+int run_settema(config_state& rs, const std::string& s);
+int run_testjoy(config_state& rs);
+int run_modocomercial(config_state& rs);
+int remover_emu(config_state& rs);
+int run_creditfichas(config_state& rs);
+int run_tempofichas(config_state& rs);
+int run_joytokey(config_state& rs);
 int run_sort(config_state& rs);
 void run_exclude(config_state& rs);
 int run_type(config_state& rs);
@@ -46,10 +62,12 @@ int run_difficulty(config_state& rs);
 void run_stat(config_state& rs);
 int run_exit(config_state& rs);
 
+void run_subInfohistory(config_state& rs);
+
 #define FIRST_CHOICE_X (int_dx_get()/20)
 #define FIRST_CHOICE_Y (int_dy_get()/15)
 #define SECOND_CHOICE_X (FIRST_CHOICE_X + int_font_dx_get()*2)
-#define SECOND_CHOICE_Y (FIRST_CHOICE_Y + int_font_dx_get()*2)
+#define SECOND_CHOICE_Y (FIRST_CHOICE_Y + int_font_dx_get()*2) + 40
 #define THIRD_CHOICE_X (SECOND_CHOICE_X + int_font_dx_get()*2)
 #define THIRD_CHOICE_Y (SECOND_CHOICE_Y + int_font_dx_get()*2)
 #define FOURTH_CHOICE_X (THIRD_CHOICE_X + int_font_dx_get()*2)

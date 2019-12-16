@@ -19,12 +19,14 @@ MENUOBJDIRS += \
 MENUOBJS += \
 	$(MENUOBJ)/menu/category.o \
 	$(MENUOBJ)/menu/choice.o \
+	$(MENUOBJ)/menu/textview.o \
 	$(MENUOBJ)/menu/common.o \
 	$(MENUOBJ)/menu/crc.o \
 	$(MENUOBJ)/menu/emulator.o \
 	$(MENUOBJ)/menu/layout.o \
 	$(MENUOBJ)/menu/favlist.o \
 	$(MENUOBJ)/menu/emuxml.o \
+	$(MENUOBJ)/menu/cleanxml.o \
 	$(MENUOBJ)/menu/game.o \
 	$(MENUOBJ)/menu/mconfig.o \
 	$(MENUOBJ)/menu/menu.o \
@@ -515,7 +517,7 @@ $(sort $(MENUOBJDIRS)):
 	$(ECHO) $@
 	$(MD) $@
 
-$(MENUOBJ)/advmenup$(EXE) : $(sort $(MENUOBJDIRS)) $(MENUOBJS)
+$(MENUOBJ)/advmenu$(EXE) : $(sort $(MENUOBJDIRS)) $(MENUOBJS)
 	$(ECHO) $@ $(MSG)
 	$(LDXX) $(MENUOBJS) $(MENULDFLAGS) -lwinmm $(LDFLAGS) $(MENULIBS) -o $@
 ifeq ($(CONF_DEBUG),yes)
@@ -646,7 +648,7 @@ MENU_DOC_BIN += \
 endif
 
 MENU_ROOT_BIN = \
-	$(MENUOBJ)/advmenup$(EXE) \
+	$(MENUOBJ)/advmenu$(EXE) \
 	$(VOBJ)/advv$(EXE) \
 	$(CFGOBJ)/advcfg$(EXE)
 ifeq ($(CONF_SYSTEM),unix)

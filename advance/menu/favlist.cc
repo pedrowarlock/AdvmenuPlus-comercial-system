@@ -18,20 +18,27 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
+#include "portable.h"
+
 #include "favlist.h"
 
 using namespace std;
 
-favorite::favorite(const string& Aname) : name(Aname)
+static string name_short_get(const string& a)
 {
-	has_changed = false;
+#if defined(__MSDOS__)
+	string r;
+	for(unsigned i=0;i<a.length()&&i<8;++i)
+		if (isspace(a[i]))
+			r += '_';
+		else
+			r += tolower(a[i]);
+	return r;
+#endif
+	return a;
 }
 
-favorite::~favorite()
-{
-}
-
-string name_emu_get(const string& name_game)
+static string name_emu_get(const string& name_game)
 {
 	int i = name_game.find('/');
 	if (i == string::npos)
@@ -40,13 +47,24 @@ string name_emu_get(const string& name_game)
 		return name_game.substr(0, i);
 }
 
-string name_without_emu_get(const string& name_game)
+static string name_without_emu_get(const string& name_game)
 {
-	int i = name_game.rfind('/');
+	int i = name_game.find('/');
 	if (i == string::npos)
 		return name_game;
 	else
 		return name_game.substr(i + 1);
+}
+
+// --------------------------------------------------------------------------------
+
+favorite::favorite(const string& Aname) : name(Aname)
+{
+	has_changed = false;
+}
+
+favorite::~favorite()
+{
 }
 
 void favorite::game_insert(const string& name_game)
@@ -99,32 +117,33 @@ bool favorite::has_game(const string& name_game)
 	return false;
 }
 
-bool favorite::import() const
+bool favorite::import(const string& favorites_dir) const
 {	
 	string emu = "";
-	string file = "favlist/" + name_get() + ".fav";
-	string path = file_config_file_home(file.c_str());
+	string file = slash_add(favorites_dir) + name_short_get(this->name_get()) + ".fav";
+	string path = path_import(file_config_file_home(file.c_str()));
 
 	if(file_exists(path)) {
 	
 		int j = 0;
 
-		string ss = file_read(file);
+		string ss = file_read(cpath_export(path));
 
 		while (j < ss.length()) {
 			string s = token_get(ss, j, "\r\n");
 			token_skip(ss, j, "\r\n");
-
-			int i = 0;
-
-			if (i<s.length() && s[i]=='[') {
-				token_skip(s, i, "[");
-				emu = token_get(s, i, "]");
-			} else if (i<s.length() && isalnum(s[i])) {
-				string rom = s;
-				if (rom.length()) {
-					string name = emu + "/" + rom;
-					gar_fav.insert(gar_fav.end(), name);
+			
+			if (s.length()) {
+				int i = 0;
+				if (s[i]=='[') {
+					token_skip(s, i, "[");
+					emu = token_get(s, i, "]");
+				} else {
+					string rom = s;
+					if (rom.length()) {
+						string name = emu + "/" + rom;
+						gar_fav.insert(gar_fav.end(), name);
+					}
 				}
 			}
 		}
@@ -133,14 +152,14 @@ bool favorite::import() const
 	return true;
 }
 
-bool favorite::save() const
+bool favorite::save(const string& favorites_dir) const
 {
 	if(!has_changed)
 		return true;
 	
-	string file = "favlist/" + name_get() + ".fav";
-	string path = file_config_file_home(file.c_str());
-
+	string file = slash_add(favorites_dir) + name_short_get(this->name_get()) + ".fav";
+	string path = path_import(file_config_file_home(file.c_str()));
+	
 	string s = "";
 	string emu = "";
 		

@@ -19,33 +19,49 @@
  */
 
 #include "portable.h"
-#include <windows.h> /*warlock*/
+
 #include "game.h"
 #include "text.h"
 #include "play.h"
 #include "menu.h"
+#include <windows.h> /*warlock*/
+
+
 
 #include "advance.h"
 
 #include <sstream>
 #include <iomanip>
 #include <algorithm>
-
+#include <string>
+#include <iostream>
 using namespace std;
-
+ 
 string EmuladorAtivo; //warlock
+string GameName; //warlock
 extern int ValorDaFicha;
 extern int bloqueado; //warlock
-int TipoEmu=0;
 
+int NumerarLista; //warlock 
+int PosicaoDaBarra;
+int TipoEmu=0;
+bool LoopCheck = false;
+string EmuladorSalvo;
 static adv_font* int_font_info_1 = 0;
 static adv_font* int_font_info_2 = 0;
 static adv_font* int_font_info_3 = 0;
 static adv_font* int_font_info_4 = 0;
 static adv_font* int_font_info_5 = 0;
+static adv_font* int_font_info_6 = 0;
+static adv_font* int_font_info_7 = 0;
+static adv_font* int_font_info_8 = 0;
+static adv_font* int_font_info_9 = 0;
+static adv_font* int_font_info_10 = 0;
 static adv_font* int_font_list = 0;
 static adv_font* int_font_menu = 0;
 static bool is_loaded = false;
+
+
 
 // ------------------------------------------------------------------------
 // Menu entry
@@ -79,7 +95,7 @@ static inline bool issep(char c)
 	return isspace(c) || (c == '-');
 }
 
-void draw_menu_game_center(const game_set& gar, const game& g, int x, int y, int dx, int dy, bool selected, merge_t merge)
+void draw_menu_game_center(const game_set& gar, const game& g, int x, int y, int dx, int dy, bool selected)
 {
 	string s;
 	if (g.emulator_get()->tree_get())
@@ -167,7 +183,7 @@ void draw_menu_game_center(const game_set& gar, const game& g, int x, int y, int
 	}
 }
 
-void draw_menu_game_left(const game_set& gar, const game& g, int x, int y, int dx, bool selected, merge_t merge, unsigned ident)
+void draw_menu_game_left(const game_set& gar, const game& g, int x, int y, int dx, bool selected, unsigned ident)
 {
 	string s;
 	if (g.emulator_get()->tree_get())
@@ -202,7 +218,6 @@ void draw_menu_game_left(const game_set& gar, const game& g, int x, int y, int d
 	int_put_special_alpha(in, x + ident, y, dx - ident, s, color_first, color_in, color);
 }
 
-//void draw_list_game(const game& g, int x, int y, int dx, bool selected, const string align)
 void draw_list_game(const game& g, int x, int y, int dx, bool selected, const string align, const int list_index)
 {
 	stringstream ss;
@@ -210,15 +225,28 @@ void draw_list_game(const game& g, int x, int y, int dx, bool selected, const st
 	string str = ss.str();
 
 	string s;
-	if (g.emulator_get()->tree_get()){
-		s = str;
-		s += " - ";
-		s +=  g.description_tree_get();
+	
+	char Buffer[100];
+	GetPrivateProfileStringA("CONFIGURACAO","NUMERAR_LISTA","0", Buffer, 100, ".\\advmenu.ini"); 
+	NumerarLista = atoi(Buffer)	;
+	if (NumerarLista == 1){
+		if (g.emulator_get()->tree_get()){
+			s = str;
+			s += " - ";
+			s +=  g.description_tree_get();
+		}else{
+			s = str;
+			s += " - ";
+			s += g.description_get();
+		}
 	}else{
-		s = str;
-		s += " - ";
-		s += g.description_get();
+		if (g.emulator_get()->tree_get()){
+			s =  g.description_tree_get();
+		}else{
+			s = g.description_get();
+		}
 	}
+	
 	int ident = int_font_dx_get()/4;
 	if (ident < 2)
 		ident = 2;
@@ -295,7 +323,6 @@ void draw_list_game(const game& g, int x, int y, int dx, bool selected, const st
 	}
 
 }
-
 
 void draw_menu_empty(int x, int y, int dx, int dy, bool selected)
 {
@@ -432,11 +459,15 @@ string tag_info_get(const game* g, int gs, int ga, const string favorites, const
 		char buffer1[100];
 		char buffer2[100];
 		char buffer3[100];
+		char PegaBloqueado[100];
 		GetPrivateProfileStringA("FICHEIRO","CONTADOR","0", buffer1, 100, ".\\advmenu.ini");
 		GetPrivateProfileStringA("CONFIGURACAO","LIGAR_CONTADOR","0", buffer2, 100, ".\\advmenu.ini");
 		GetPrivateProfileStringA("CONFIGURACAO","INFO_TAG4","CONTADOR GERAL", buffer3, 100, ".\\advmenu.ini");
 		ContGeral=atoi(buffer1);
 		LigarContador=atoi(buffer2);
+		
+		GetPrivateProfileStringA("CONFIGURACAO","BLOQUEADO", "0", PegaBloqueado, 100, ".\\advmenu.ini");
+		bloqueado=atoi(PegaBloqueado);
 		
 		if (LigarContador == 1 &&  bloqueado != 0) {
 		os << buffer3 << " " << setw(2) << setfill('0') << ContGeral;
@@ -449,22 +480,57 @@ string tag_info_get(const game* g, int gs, int ga, const string favorites, const
 		
 		EmuladorAtivo.clear(); 
 		EmuladorAtivo = g->emulator_get()->user_name_get();
+		
 		ostringstream os;
 		int RetFichas=0;
+		int RetFichas2=0;
     	char buffer1[100];
     	char buffer2[100];
+    	
 		char infobuff1[100];
 		char infobuff2[100];
 		char infobuff3[100];
-		RetFichas = GetPrivateProfileStringA("MODOFICHAS",EmuladorAtivo.c_str(),"0", buffer1, 100, ".\\advmenu.ini");  //Warlock (mechido j·) - definir qual emulador abrir· em ficha/tempo
+		char PegaBloqueado[100];
+		//RetFichas  = GetPrivateProfileStringA("MODOFICHAS",EmuladorAtivo.c_str(),"0", buffer1, 100, ".\\advmenu.ini");  //Warlock (mechido j√°) - definir qual emulador abrir√° em ficha/tempo
+		string path =  ".\\ini\\" + EmuladorAtivo + ".ini";
+		RetFichas  = GetPrivateProfileStringA("configuracao","MODOFICHAS","0", buffer1, 100, path.c_str());  //Warlock (mechido j√°) - definir qual emulador abrir√° em ficha/tempo
+		
 		GetPrivateProfileStringA("FICHEIRO","FICHAS","0", buffer2, 100, ".\\advmenu.ini");
 		//info
 		GetPrivateProfileStringA("CONFIGURACAO","INFO_TAG1","COIN:",  infobuff1, 100, ".\\advmenu.ini");
 		GetPrivateProfileStringA("CONFIGURACAO","INFO_TAG2","COINS:", infobuff2, 100, ".\\advmenu.ini");
 		GetPrivateProfileStringA("CONFIGURACAO","INFO_TAG3","TIME:",  infobuff3, 100, ".\\advmenu.ini");
 		
+		GetPrivateProfileStringA("CONFIGURACAO","BLOQUEADO", "0", PegaBloqueado, 100, ".\\advmenu.ini");
+		bloqueado=atoi(PegaBloqueado);
 		
-		if ( bloqueado != 0 && RetFichas){
+		
+		char buffer3[100];
+		GameName.clear();
+		GameName = (g->clone_best_get()).name_without_emulator_get();
+		
+		if (EmuladorAtivo == "MENU SYSTEMS"){
+			string path =  ".\\ini\\" + GameName + ".ini";
+			RetFichas2 = GetPrivateProfileStringA("CONFIGURACAO","MODOFICHAS","0", buffer3, 100, path.c_str());  //Warlock (mechido j√°) - definir qual emulador abrir√° em ficha/tempo
+			
+			if ( bloqueado != 0 && RetFichas){
+				if (atoi(buffer3) >= 1) {
+					if (atoi(buffer2) >= ValorDaFicha*2) {	
+					os << infobuff2;	// MOSTRA FICHA - Plural
+					}else{
+					os << infobuff1;    // MOSTRA FICHA - Singular
+					}
+				info_tag = os.str();
+				}else{
+				os << infobuff3;       // MOSTRA TEMPO
+				info_tag = os.str();
+				}
+			}else{
+				os << "";					   // N√ÉO MOSTRA NADA SE N√ÉO TIVER ADVMENU.INI ou SE N√ÉO ESTIVER BLOQUEADO
+				info_tag = os.str();
+			}
+		}else{
+			if ( bloqueado != 0 && RetFichas){
 				if (atoi(buffer1) >= 1) {
 					if (atoi(buffer2) >= ValorDaFicha*2) {	
 					os << infobuff2;	// MOSTRA FICHA - Plural
@@ -476,43 +542,82 @@ string tag_info_get(const game* g, int gs, int ga, const string favorites, const
 				os << infobuff3;       // MOSTRA TEMPO
 				info_tag = os.str();
 				}
-		}else{
-		os << "";					   // N√O MOSTRA NADA SE N√O TIVER ADVMENU.INI ou SE N√O ESTIVER BLOQUEADO
-		info_tag = os.str();
+		
+			}else{
+				os << "";					   // N√ÉO MOSTRA NADA SE N√ÉO TIVER ADVMENU.INI ou SE N√ÉO ESTIVER BLOQUEADO
+				info_tag = os.str();
+			}
 		}
-				
 //---------------------------------------------------------------------------------------------------------------------------------------------	
 //warlock - mostrar quantidade de fichas-tempo na tela.  
 		} else if (tag_info == "contador") { 
 		EmuladorAtivo.clear(); 
 		EmuladorAtivo = g->emulator_get()->user_name_get();
 		ostringstream os;
-		int RetFichas = 0,RetTempo = 0, Fichas = 0, TempoFicha = 0;
+		int RetFichas = 0,RetTempo = 0, Fichas = 0, TempoFicha = 0,RetFichas2 = 0;
 		char buffer1[100];
 		char buffer2[100];
+		char PegaBloqueado[100];
 		RetFichas = GetPrivateProfileStringA("FICHEIRO","FICHAS","0", buffer1, 100, ".\\advmenu.ini");
-		RetTempo  = GetPrivateProfileStringA("MODOFICHAS",EmuladorAtivo.c_str(),"0", buffer2, 100, ".\\advmenu.ini");  
-		if ( RetFichas && bloqueado != 0 ){
-			Fichas=atoi(buffer1);
-			TempoFicha = atoi(buffer2);
 		
-			if ( TempoFicha >= 1){
-			os << setw(2) << setfill('0') << (Fichas / ValorDaFicha);
-			info_tag = os.str();		
-			}else{
-				if(Fichas>=3600000)//mostra acima de 1 hora
-					os << setw(2) << setfill('0') << (Fichas/3600000) << ":" << setw(2) << setfill('0') << ((Fichas % 3600000)/60000) << ":" << setw(2) << setfill('0') << (((Fichas % 3600000) % 60000) / 1000 );
-				else if ((Fichas < 3600000) && (Fichas >=60000))//mostra abaixo de 1 hora
-					os << "00:" << setw(2) << setfill('0') << (Fichas/60000) << ":" << setw(2) << setfill('0') << ((Fichas%60000) / 1000);
-				else //mostra abaixo de 1 minuto
-					os << "00:00:" << setw(2) << setfill('0') << (Fichas/1000);
-			info_tag = os.str();
-			}
+		string path =  ".\\ini\\" + EmuladorAtivo + ".ini";
+		RetTempo  = GetPrivateProfileStringA("CONFIGURACAO","MODOFICHAS","0", buffer2, 100, path.c_str());  
+		//RetTempo  = GetPrivateProfileStringA("MODOFICHAS",EmuladorAtivo.c_str(),"0", buffer2, 100, ".\\advmenu.ini");  
+		
+		GetPrivateProfileStringA("CONFIGURACAO","BLOQUEADO", "0", PegaBloqueado, 100, ".\\advmenu.ini");
+		bloqueado=atoi(PegaBloqueado);
+		
+		char buffer3[100];
+		GameName.clear();
+		GameName = (g->clone_best_get()).name_without_emulator_get();
+		string path2 =  ".\\ini\\" + GameName + ".ini";
+		if (EmuladorAtivo == "MENU SYSTEMS"){
+			RetFichas2 = GetPrivateProfileStringA("CONFIGURACAO","MODOFICHAS","0", buffer3, 100, path2.c_str());  //Warlock (mechido j√°) - definir qual emulador abrir√° em ficha/tempo
+			 if ( RetFichas && bloqueado != 0 ){
+					Fichas=atoi(buffer1);
+					TempoFicha = atoi(buffer3);
+			
+					if ( TempoFicha >= 1){
+						os << setw(2) << setfill('0') << (Fichas / ValorDaFicha);
+						info_tag = os.str();		
+					}else{
+						if(Fichas>=3600000)//mostra acima de 1 hora
+							os << setw(2) << setfill('0') << (Fichas/3600000) << ":" << setw(2) << setfill('0') << ((Fichas % 3600000)/60000) << ":" << setw(2) << setfill('0') << (((Fichas % 3600000) % 60000) / 1000 );
+						else if ((Fichas < 3600000) && (Fichas >=60000))//mostra abaixo de 1 hora
+							os << "00:" << setw(2) << setfill('0') << (Fichas/60000) << ":" << setw(2) << setfill('0') << ((Fichas%60000) / 1000);
+						else //mostra abaixo de 1 minuto
+							os << "00:00:" << setw(2) << setfill('0') << (Fichas/1000);
+						info_tag = os.str();
+					}
+				}else{
+					info_tag = "";	
+				}
 		}else{
-		info_tag = "";	
+			if ( RetFichas && bloqueado != 0 ){
+				Fichas=atoi(buffer1);
+				TempoFicha = atoi(buffer2);
+		
+				if ( TempoFicha >= 1){
+					os << setw(2) << setfill('0') << (Fichas / ValorDaFicha);
+					info_tag = os.str();		
+				}else{
+					if(Fichas>=3600000)//mostra acima de 1 hora
+						os << setw(2) << setfill('0') << (Fichas/3600000) << ":" << setw(2) << setfill('0') << ((Fichas % 3600000)/60000) << ":" << setw(2) << setfill('0') << (((Fichas % 3600000) % 60000) / 1000 );
+					else if ((Fichas < 3600000) && (Fichas >=60000))//mostra abaixo de 1 hora
+						os << "00:" << setw(2) << setfill('0') << (Fichas/60000) << ":" << setw(2) << setfill('0') << ((Fichas%60000) / 1000);
+					else //mostra abaixo de 1 minuto
+						os << "00:00:" << setw(2) << setfill('0') << (Fichas/1000);
+					info_tag = os.str();
+				}
+			}else{
+				info_tag = "";	
+			}
 		}
+		
+			
 //---------------------------------------------------------------------------------------------------------------------------------------------	
 //warlock - mostrar Nome do emulador na tela principal.
+		/*
 		} else if (tag_info == "emulador_name") { 
 		EmuladorAtivo.clear(); 
 		EmuladorAtivo = g->emulator_get()->user_name_get();
@@ -524,11 +629,92 @@ string tag_info_get(const game* g, int gs, int ga, const string favorites, const
 			os << buffer1;
 		info_tag = os.str();
 					
-			}
+			}*/
 //---------------------------------------------------------------------------------------------------------------------------------------------	
+
+	} else if (tag_info == "relogio") {
+			ostringstream os;
+			time_t rawtime;
+			struct tm * timeinfo;
+			char buffer [80];
+
+			time (&rawtime);
+			timeinfo = localtime (&rawtime);
+
+			strftime (buffer,80,"%H:%M",timeinfo);
+			puts (buffer);
+			os <<buffer;
+			info_tag = os.str();
+//------------------------------------------------------------------------------------------------------------------
+	
+		} else if (tag_info == "Data-Por-Extenso") {
+			ostringstream os;
+			time_t rawtime;
+			struct tm *timeinfo;
+			char buffer[100];
+			std::string data;
+		 
+			time(&rawtime);
+			timeinfo = localtime(&rawtime);
+		 
+			strftime(buffer, 100, "%d", timeinfo);
+			data = buffer;
+		 
+			data += " de ";
+		 
+			strftime(buffer, 100, "%m", timeinfo);
+			if (strcmp(buffer, "01") == 0) {
+				data += "janeiro de ";
+			} else if (strcmp(buffer, "02") == 0) {
+				data += "fevereiro de ";
+			} else if (strcmp(buffer, "03") == 0) {
+				data += "marco de ";
+			} else if (strcmp(buffer, "04") == 0) {
+				data += "abril de ";
+			} else if (strcmp(buffer, "05") == 0) {
+				data += "maio de ";
+			} else if (strcmp(buffer, "06") == 0) {
+				data += "junho de ";
+			} else if (strcmp(buffer, "07") == 0) {
+				data += "julho de ";
+			} else if (strcmp(buffer, "08") == 0) {
+				data += "agosto de ";
+			} else if (strcmp(buffer, "09") == 0) {
+				data += "setembro de ";
+			} else if (strcmp(buffer, "10") == 0) {
+				data += "outubro de ";
+			} else if (strcmp(buffer, "11") == 0) {
+				data += "novembro de ";
+			} else if (strcmp(buffer, "12") == 0) {
+				data += "dezembro de ";
+			}
+		 
+			strftime(buffer, 100, "%Y", timeinfo);
+			data += buffer;
+		 
+			os <<data;
+			info_tag = os.str();		
+//---------------------------------------------------------------------------------------------------------------------------------------------	
+
+	} else if (tag_info == "Data-resumida") {
+			ostringstream os;
+			time_t rawtime;
+			struct tm *timeinfo;
+			char buffer[100];
+		 
+			time(&rawtime);
+			timeinfo = localtime(&rawtime);
+		  
+			strftime(buffer, 100, "%d/%m/%Y", timeinfo);
+		 
+			os <<buffer;
+			info_tag = os.str();
+//---------------------------------------------------------------------------------------------------------------------------------------------	
+		
 		} else if (tag_info == "sessions") {
 			ostringstream os;
 			unsigned session;
+	
 			if (g->emulator_get()->tree_get())
 				session = g->session_tree_get();
 			else
@@ -562,12 +748,68 @@ string tag_info_get(const game* g, int gs, int ga, const string favorites, const
 				info_tag = os.str();
 			}
 		} else if (tag_info == "rom") {
-			if (g->emulator_get()->tree_get())
-				info_tag = (g->clone_best_get()).name_without_emulator_get();
-			else
-				info_tag = g->name_without_emulator_get();
+			if (g->emulator_get()->tree_get()){
+				ostringstream os;
+				std::string str = (g->clone_best_get()).name_without_emulator_get();
+				std::transform(str.begin(), str.end(),str.begin(), ::toupper);
+				os << str; 
+				info_tag = os.str();
+			}else{
+				ostringstream os;
+				std::string str = g->name_without_emulator_get();
+				std::transform(str.begin(), str.end(),str.begin(), ::toupper);
+				os << str; 
+				info_tag = os.str();
+			}
 		} else	if (tag_info == "emulator") {
-			info_tag = g->emulator_get()->user_name_get();
+			EmuladorAtivo.clear(); 
+			EmuladorAtivo = g->emulator_get()->user_name_get();
+			ostringstream os;
+			char buffer[100];
+			string path =  ".\\ini\\" + EmuladorAtivo + ".ini";
+			GetPrivateProfileStringA("configuracao","NOME","00", buffer, 100,  path.c_str()); 
+			//GetPrivateProfileStringA("NOME_DO_EMULADOR",EmuladorAtivo.c_str(),"00", buffer, 100, ".\\advmenu.ini"); 
+			
+				if (EmuladorAtivo == "MENU SYSTEMS"){
+					string path =  ".\\ini\\" + (g->clone_best_get()).name_without_emulator_get() + ".ini";
+					GetPrivateProfileStringA("configuracao","NOME","00", buffer, 100, path.c_str()); 
+					if (g->emulator_get()->tree_get()){
+						if (strcmp(buffer, "00") == 0) {
+							std::string str = (g->clone_best_get()).name_without_emulator_get();
+							std::transform(str.begin(), str.end(),str.begin(), ::toupper);
+							os << str; 
+							info_tag = os.str();
+						}else{
+							os << buffer;
+							info_tag = os.str();
+						}
+						
+					}else{
+						if (strcmp(buffer, "00") == 0) {
+							string path =  ".\\ini\\" + g->name_without_emulator_get() + ".ini";
+							GetPrivateProfileStringA("configuracao","NOME","00", buffer, 100, path.c_str()); 
+							std::string str = g->name_without_emulator_get();
+							std::transform(str.begin(), str.end(),str.begin(), ::toupper);
+							os << str; 
+							info_tag = os.str();
+						}else{
+							os << buffer;
+							info_tag = os.str();
+						}
+					}
+				}else{
+					if (strcmp(buffer, "00") == 0) {
+						std::string str = g->emulator_get()->user_name_get();
+						std::transform(str.begin(), str.end(),str.begin(), ::toupper);
+						os << str; 
+						info_tag = os.str();
+					}else{
+						os << buffer;
+						info_tag = os.str();
+					}
+				}
+
+		
 		} else if (tag_info == "type"){
 			info_tag = g->type_get()->name_get();
 		} else if (tag_info == "refresh") {
@@ -586,12 +828,13 @@ string tag_info_get(const game* g, int gs, int ga, const string favorites, const
 			info_tag = os.str();
 		} else if (tag_info == "selected") {
 			ostringstream os;
-			//os << "Tel: " << "(21)" << " 24" << "43" << "-64" << "99" << setw(23) <<gs;
-			os << gs;
+			os << setw(2) << setfill('0') << gs;
+			//os << gs;
 			info_tag = os.str();
 		} else if (tag_info == "games") {
+			
 			ostringstream os;
-			os << ga;
+			os << setw(2) << setfill('0') << ga;
 			info_tag = os.str();
 		} else if (tag_info == "clone") {
 			if (g->parent_get())
@@ -644,285 +887,147 @@ void draw_bar_info(adv_font* font, const game* g, const string s, int gs, int ga
 	draw_tag_info(font, info, x, y, dx, color, align);
 }
 
-void draw_menu_bar(const game* g, const string favorites, int g2, int x, int y, int dx)
+// TOP BAR - JUEGOS
+void draw_menu_bar(const game* g, const string favorites, bool menusystems, int x, int y, int dx)
 {
 	int_clear_alpha(x, y, dx, int_font_dy_get(), COLOR_MENU_BAR.background);
 
-	int separator = dx > 40*int_font_dx_get() ? 1*int_font_dx_get() : 0*int_font_dx_get();
-	int in_separator =  dx > 40*int_font_dx_get() ? 2*int_font_dx_get() : 1*int_font_dx_get();
+	bool mini = dx <= 50*int_font_dx_get();
+	int separator = dx > 60*int_font_dx_get() ? 1*int_font_dx_get() : 0*int_font_dx_get();
+	int in_separator =  dx > 80*int_font_dx_get() ? 2*int_font_dx_get() : 1*int_font_dx_get();
 	int xr = dx - separator + x;
 	int xl = separator + x;
 
+	// emulador
 	if (g) {
 		ostringstream os;
-		os << setw(4) << setfill(' ') << g2;
-		draw_tag_right(os.str(), xl, xr, y, in_separator, COLOR_MENU_BAR);
+		os << g->emulator_get()->user_name_get();
+		draw_tag_left(os.str(), xl, xr, y, separator, COLOR_MENU_BAR_TAG);
+		draw_tag_left(">", xl, xr, y, separator, COLOR_MENU_BAR);
 	}
 
-	if (g) {
-		ostringstream os;
-		/*unsigned time;
-		if (g->emulator_get()->tree_get())
-			time = g->time_tree_get();
-		else
-			time = g->time_get();
-		os << setw(3) << setfill('0') << (time/3600) << ":" << setw(2) << setfill('0') << ((time/60)%60);
-		os << "Tel: " << "(21)" << " 24" << "43" << "-64" << "99" << setw(40) << "VERS√O: 2016" << "    /    " << "JOGOS"; //warlock 
-		*/
-		os << "GAMES"; //warlock
-		draw_tag_right(os.str(), xl, xr, y, in_separator, COLOR_MENU_BAR);
-	}
-
-/*	if (favorites != "") {
+	// lista de favoritos
+	if (!mini || (mini && favorites != "All Games")) {
 		ostringstream os;
 		os << favorites;
 		draw_tag_right(os.str(), xl, xr, y, in_separator, COLOR_MENU_BAR_TAG);
-	}*/
+	}
 
-	if (g && !g->type_derived_get()->undefined_get()) {
+	// tipo
+	if (g && !menusystems && !g->type_derived_get()->undefined_get()) {
 		ostringstream os;
 		os << g->type_derived_get()->name_get();
-		draw_tag_right(os.str(), xl, xr, y, in_separator, COLOR_MENU_BAR_TAG);
-	}
-	/*if (g) {               //FunÁ„o que mostra nome do jogo selecionado na barra inferior esquerda.
-		ostringstream os;
-		if (g->emulator_get()->tree_get())
-			//os << g->description_tree_get();
-			
-		draw_tag_left(os.str(), xl, xr, y, in_separator, COLOR_MENU_BAR_TAG);
-	}*/
-	
-		if (g) {
-		ostringstream os;
-		if (g->emulator_get()->tree_get())
-			os << "  " << g->description_tree_get();
-		else
-			os << "  " << g->description_get();
-		draw_tag_left(os.str(), xl, xr, y, in_separator, COLOR_MENU_CURSOR);
-	}
-	
-	
-	
-/*
-if (g) {
-		ostringstream os;
-		unsigned session;
-		if (g->emulator_get()->tree_get())
-			session = g->session_tree_get();
-		else
-			session = g->session_get();
-		os << setw(3) << setfill(' ') << session << "p";
-		draw_tag_right_whole(os.str(), xl, xr, y, in_separator, COLOR_MENU_BAR);
+		int xl_type = xl;
+		if (dx <= 60*int_font_dx_get())
+			xl_type = 2*dx/3;
+		draw_tag_right(os.str(), xl_type, xr, y, in_separator, mini ? COLOR_MENU_BAR_TAG : COLOR_MENU_BAR);
 	}
 
+	// nombre largo
 	if (g) {
 		ostringstream os;
-		if (g->size_get() >= 10*1000*1000)
-			os << setw(4) << g->size_get()/1000/1000 << "M";
-		else
-			os << setw(4) << g->size_get()/1000 << "k";
-		draw_tag_right_whole(os.str(), xl, xr, y, in_separator, COLOR_MENU_BAR);
+		os << g->description_get();
+		draw_tag_left(os.str(), xl, xr, y, 0, COLOR_MENU_BAR);
 	}
-
-	if (g && g->sizex_get() && g->sizey_get()) {
-		ostringstream os;
-		os << g->sizex_get() << "x" << g->sizey_get();
-		draw_tag_right_whole(os.str(), xl, xr, y, in_separator, COLOR_MENU_BAR);
-	}
-
-	if (g) {
-		ostringstream os;
-		if (g->emulator_get()->tree_get()) {
-			const game* gb = &g->clone_best_get();
-			os << gb->name_get();
-		} else {
-			os << g->name_get();
-		}
-		draw_tag_left_whole(os.str(), xl, xr, y, in_separator, COLOR_MENU_BAR);
-	}*/
 }
 
-void draw_menu_info(const game_set& gar, const game* g, int x, int y, int dx, merge_t merge, listpreview_t preview, listsort_t sort_mode, difficulty_t difficulty, bool lock, int brTipo)
+// BOTTOM BAR
+void draw_menu_info(const game_set& gar, const game* g, int gs, int g2, bool lock, bool menusystems, int x, int y, int dx,int brTipo)
 {
 	int_clear_alpha(x, y, dx, int_font_dy_get(), COLOR_MENU_BAR.background);
 
-	int separator = dx > 40*int_font_dx_get() ? 1*int_font_dx_get() : 0*int_font_dx_get();
-	int in_separator = dx > 40*int_font_dx_get() ? 2*int_font_dx_get() : 1*int_font_dx_get();
+	bool mini = dx <= 50*int_font_dx_get();
+	int separator = dx > 60*int_font_dx_get() ? 1*int_font_dx_get() : 0*int_font_dx_get();
+	int in_separator = dx > 80*int_font_dx_get() ? 2*int_font_dx_get() : 1*int_font_dx_get();
 	int xr = dx - separator + x;
 	int xl = separator + x;
 
+	// n seleccionado/totales
 	if (g) {
-		const game* gb;
-		if (g->emulator_get()->tree_get()) 
-			gb = &g->clone_best_get();
-		else
-			gb = g;
-
-		if (!gb->present_tree_get())
-			draw_tag_right("MISSING", xl, xr, y, in_separator, COLOR_MENU_BAR_TAG);
-		else if (gb->play_get() == play_preliminary)
-			draw_tag_right("  ALPHA", xl, xr, y, in_separator, COLOR_MENU_BAR_TAG);
-		else
-			draw_tag_right("       ", xl, xr, y, in_separator, COLOR_MENU_BAR_TAG);
-	}
-
-	if (!lock){
 		ostringstream os;
-		int Ret= 0, vl=0;
-		char buffer1[100];
-		char bufferEmu[100];
-		Ret = GetPrivateProfileStringA("FICHEIRO","FICHAS","0", buffer1, 100, ".\\advmenu.ini");
-		
-		if ( Ret ){
-			vl=atoi(buffer1);
-		}
-		if (bloqueado >= 1){
-			
-			if ( brTipo ){
-				os << setw(2) << setfill('0') << (vl / ValorDaFicha);
-			
-			if ( vl < ValorDaFicha )
-				draw_tag_right(os.str(), xl, xr, y, in_separator, COLOR_MENU_NFICHA); 
-				else
-				draw_tag_right(os.str(), xl, xr, y, in_separator, COLOR_MENU_FICHA); 
-			}else{
-				if(vl>=3600000) //mostra acima de 1 hora
-					os << setw(2) << setfill('0') << (vl/3600000) << ":" << setw(2) << setfill('0') << ((vl % 3600000)/60000) << ":" << setw(2) << setfill('0') << (((vl % 3600000) % 60000) / 1000 );
-				else if ((vl < 3600000) && (vl >=60000)) //mostra abaixo de 1 hora
-					os << "00:" << setw(2) << setfill('0') << (vl/60000) << ":" << setw(2) << setfill('0') << ((vl%60000) / 1000);
-				else //mostra abaixo de 1 minuto
-					os << "00:00:" << setw(2) << setfill('0') << (vl/1000);
-			
-			if ( vl < 60000 )
-				 draw_tag_right(os.str(), xl, xr, y, in_separator, COLOR_MENU_NFICHA); 
-			 else
-				 draw_tag_right(os.str(), xl, xr, y, in_separator, COLOR_MENU_FICHA);  
-			}
-	}else{
-		os << "";
-		draw_tag_right(os.str(), xl, xr, y, in_separator, COLOR_MENU_FICHA); 
-		}
-	}
-	
-
-	switch (preview) {
-	case preview_flyer: draw_tag_right("flyers", xl, xr, y, in_separator, COLOR_MENU_BAR_HIDDEN); break;
-	case preview_cabinet: draw_tag_right("cabinets", xl, xr, y, in_separator, COLOR_MENU_BAR_HIDDEN); break;
-	case preview_icon: draw_tag_right("icons", xl, xr, y, in_separator, COLOR_MENU_BAR_HIDDEN); break;
-	case preview_marquee: draw_tag_right("marquees", xl, xr, y, in_separator, COLOR_MENU_BAR_HIDDEN); break;
-	case preview_title: draw_tag_right("titles", xl, xr, y, in_separator, COLOR_MENU_BAR_HIDDEN); break;
-	case preview_snap: 	
-		if (bloqueado >= 1){
-		ostringstream os;
-		char infobuff1[100];
-		char infobuff2[100];
-		char infobuff3[100];
-		char infobuff4[100];
-		
-		GetPrivateProfileStringA("CONFIGURACAO","INFO_TAG1","COIN:", infobuff1, 100, ".\\advmenu.ini");
-		GetPrivateProfileStringA("CONFIGURACAO","INFO_TAG3","TIME:", infobuff2, 100, ".\\advmenu.ini");
-		GetPrivateProfileStringA("FICHEIRO","FICHAS","0", infobuff3, 100, ".\\advmenu.ini");
-		GetPrivateProfileStringA("CONFIGURACAO","INFO_TAG2","COINS:", infobuff4, 100, ".\\advmenu.ini");
-		if ( brTipo ) {
-		//os << "Tel: " << "(21)" << " 24" << "43" << "-64" << "99" << setw(53)<< infobuff1;	
-		if ( atoi(infobuff3) >= ValorDaFicha*2) {	
-				os << infobuff4;	
-				}else{
-				os << infobuff1;
-				}
-		draw_tag_right(os.str(), xl, xr, y, in_separator, COLOR_MENU_BAR); 
-		}else{
-		//os << "Tel: " << "(21)" << " 24" << "43" << "-64" << "99" << setw(43)<< infobuff2;	
-		os << infobuff2;	
-		draw_tag_right(os.str(), xl, xr, y, in_separator, COLOR_MENU_BAR);
-		 break;
-		}
-		}else{
-			//ostringstream os;
-			//os  << "Tel: " << "(21)" << " 24" << "43" << "-66" << "66" << setw(63)<< infobuff3;	
-			//os  << "";	
-			draw_tag_right("",xl, xr, y, in_separator, COLOR_MENU_BAR_HIDDEN);
-		}
-	} 
-
-	switch (sort_mode) {
-	case sort_by_name : draw_tag_right("", xl, xr, y, in_separator, COLOR_MENU_BAR_HIDDEN); break;
-	case sort_by_root_name : draw_tag_right("parent", xl, xr, y, in_separator, COLOR_MENU_BAR_HIDDEN); break;
-	case sort_by_time : draw_tag_right("time", xl, xr, y, in_separator, COLOR_MENU_BAR_HIDDEN); break;
-	case sort_by_session : draw_tag_right("play", xl, xr, y, in_separator, COLOR_MENU_BAR_HIDDEN); break;
-	case sort_by_year : draw_tag_right("year", xl, xr, y, in_separator, COLOR_MENU_BAR_HIDDEN); break;
-	case sort_by_manufacturer : draw_tag_right("manuf", xl, xr, y, in_separator, COLOR_MENU_BAR_HIDDEN); break;
-	case sort_by_type : draw_tag_right("type", xl, xr, y, in_separator, COLOR_MENU_BAR_HIDDEN); break;
-	case sort_by_size : draw_tag_right("size", xl, xr, y, in_separator, COLOR_MENU_BAR_HIDDEN); break;
-	case sort_by_res : draw_tag_right("res", xl, xr, y, in_separator, COLOR_MENU_BAR_HIDDEN); break;
-	case sort_by_info : draw_tag_right("info", xl, xr, y, in_separator, COLOR_MENU_BAR_HIDDEN); break;
-	case sort_by_timepersession : draw_tag_right("timeperplay", xl, xr, y, in_separator, COLOR_MENU_BAR_HIDDEN); break;
-	case sort_by_emulator : draw_tag_right("emulator", xl, xr, y, in_separator, COLOR_MENU_BAR_HIDDEN); break;
+		os << gs << "/" << g2;
+		draw_tag_right(os.str(), xl, xr, y, in_separator, COLOR_MENU_BAR_TAG);
 	}
 
-	switch (difficulty) {
-	case difficulty_none : draw_tag_right("", xl, xr, y, in_separator, COLOR_MENU_BAR_HIDDEN); break;
-	case difficulty_easiest : draw_tag_right("easiest", xl, xr, y, in_separator, COLOR_MENU_BAR_HIDDEN); break;
-	case difficulty_easy : draw_tag_right("easy", xl, xr, y, in_separator, COLOR_MENU_BAR_HIDDEN); break;
-	case difficulty_medium : draw_tag_right("normal", xl, xr, y, in_separator, COLOR_MENU_BAR_HIDDEN); break;
-	case difficulty_hard : draw_tag_right("hard", xl, xr, y, in_separator, COLOR_MENU_BAR_HIDDEN); break;
-	case difficulty_hardest : draw_tag_right("hardest", xl, xr, y, in_separator, COLOR_MENU_BAR_HIDDEN); break;
-	}
-	if (g) {               //FunÁ„o que mostra nome do jogo selecionado e a barra de contador geral //warlock
-		ostringstream os;
-		ostringstream cs;
-		int Ret= 0, Ret2=0,  Ret3=0, ContGeral= 0, LigarContador=0;
-		char buffer1[100];
-		char buffer2[100];
-		char buffer3[100];
-		Ret = GetPrivateProfileStringA("FICHEIRO","CONTADOR","0", buffer1, 100, ".\\advmenu.ini");
-		Ret2 = GetPrivateProfileStringA("CONFIGURACAO","LIGAR_CONTADOR","0", buffer2, 100, ".\\advmenu.ini");
-		Ret3 = GetPrivateProfileStringA("CONFIGURACAO","INFO_TAG4","CONTADOR GERAL", buffer3, 100, ".\\advmenu.ini");
-		ContGeral=atoi(buffer1);
-		LigarContador=atoi(buffer2);
-		cs << buffer3;
-		if (LigarContador == 1 && bloqueado >= 1) {
-		os << setw(25) << cs.str() << ": " << setw(2) << setfill('0') << ContGeral << setfill(' ') << setw(58)  << "" ;
-		draw_tag_left(os.str(), xl, xr, y, in_separator, COLOR_MENU_BAR_TAG);
-		}else{
-			os << setw(118) << "";
-		draw_tag_left(os.str(), xl, xr, y, in_separator, COLOR_MENU_BAR_TAG);
-		}
-	} 
-	
-/*if (g) {
-	
-	ostringstream os;
-	draw_tag_left(os.str(), xl, xr, y, in_separator, COLOR_MENU_CURSOR);  
-	
-}*/
-	
-	/*if (g) {  //Remover clones, descriÁ„o da barra inferior e etc //warlock
+	// lock
+	if (lock)
+		draw_tag_right(mini ? "L" : "locked", xl, xr, y, in_separator, COLOR_MENU_BAR_HIDDEN);
+
+	if (g) {
+		// info
 		if (g->info_get().length())
 			draw_tag_right(g->info_get(), xl, xr, y, 0, COLOR_MENU_BAR_TAG);
 
-		draw_tag_left(g->manufacturer_get(), xl, xr, y, 0, COLOR_MENU_BAR); 
+		// fabricante
+		draw_tag_left(g->manufacturer_get(), xl, xr, y, 0, COLOR_MENU_BAR_TAG);
 
+		// a√±o
 		if (g->year_get().length())
-			draw_tag_left(", " + g->year_get(), xl, xr, y, 0, COLOR_MENU_BAR);
-
-		if (g->clone_get() > 0) {
+			draw_tag_left(", " + g->year_get(), xl, xr, y, 0, COLOR_MENU_BAR_TAG);
+		
+		// rom
+		if (!menusystems) {
+			if (xl != separator + x) {
+				draw_tag_left("", xl, xr, y, in_separator, COLOR_MENU_BAR);
+				if (!mini)
+					draw_tag_left("-", xl, xr, y, in_separator, COLOR_MENU_BAR);
+			}
 			ostringstream os;
-			os << ", " << g->clone_get() << " clones";
+			if (g->name_hash_get() != "")
+				os << g->name_hash_get() << "/";
+			if (g->emulator_get()->tree_get()) {
+				const game* gb = &g->clone_best_get();
+				os << gb->name_without_emulator_get();
+			} else {
+				os << g->name_without_emulator_get();
+			}
 			draw_tag_left(os.str(), xl, xr, y, 0, COLOR_MENU_BAR);
 		}
 
-		if (g->parent_get()) {
+		// n clones
+		if (g->clone_get() > 0) {
 			ostringstream os;
-			os << ", ";
-			if (g->software_get())
-				os << "software of";
-			else
-				os << "clone of";
-			os << " " << g->parent_get()->name_get();
-			draw_tag_left(os.str(), xl, xr, y, in_separator, COLOR_MENU_BAR);
+			os << ", " << g->clone_get() << (g->clone_get() == 1 ? " clone" : " clones");
+			draw_tag_left(os.str(), xl, xr, y, 0, COLOR_MENU_BAR);
 		}
-	} */
+
+		// clone de
+		if (g->parent_get()) {
+			if (g->emulator_get()->type_get() == "mess_mess") {
+				if (g->parent_get()->software_get()) {
+					ostringstream os;
+					os << ", ";
+						os << "software of" << " " << g->parent_get()->name_without_emulator_get();
+					draw_tag_left(os.str(), xl, xr, y, 0, COLOR_MENU_BAR);
+				}
+			} else {
+				ostringstream os;
+				os << ", ";
+				if (g->software_get())
+					os << "software of";
+				else
+					os << "clone of";
+				os << " " << g->parent_get()->name_without_emulator_get();
+				draw_tag_left(os.str(), xl, xr, y, 0, COLOR_MENU_BAR);
+			}
+		}
+
+		// bios arcade
+		if (g->romof_get() != "" && g->romof_get() != g->cloneof_get()) {
+			ostringstream os;
+			os << " (" << file_file(g->romof_get()) << ")";
+			draw_tag_left(os.str(), xl, xr, y, 0, COLOR_MENU_BAR);
+		}
+
+		// resolucion de la rom seleccionada
+		if (g->sizex_get() && g->sizey_get()) {
+			ostringstream os;
+			draw_tag_left("", xl, xr, y, in_separator, COLOR_MENU_BAR);
+			if (!mini) os << "-    ";
+			os << g->sizex_get() << "x" << g->sizey_get();
+			draw_tag_left_whole(os.str(), xl, xr, y, 0, COLOR_MENU_BAR_HIDDEN);
+		}
+	}
 }
 
 struct cell_t {
@@ -949,25 +1054,29 @@ void calculo_listado_5(struct cell_t* int_map, int coln, int rown, int list_x, i
 	int cell_dy = name_dy;
 	int space_diagonal_x = abs(diagonal * (rown - 1));
 	if(diagonal < 0) cell_x = cell_x + space_diagonal_x;
+		
+
 	
 	for(int r=0;r<rown;++r) {
 		for(int c=0;c<coln;++c) {
 			unsigned i = r * coln + c;
-			int_map[i].x = cell_x + diagonal * r + (cell_dx + space_x) * c;
+			int_map[i].x = cell_x; //int_map[i].x = cell_x + diagonal * r + (cell_dx + space_x) * c; //Warlock Diagonal Lista
 			int_map[i].y = cell_y;
 			int_map[i].dx = cell_dx - space_diagonal_x;
 			int_map[i].dy = name_dy;
 		}
 		cell_y += cell_dy + space_y;
-	//	if (diagonal > 0 {
-	//		if (r > (rown/2)+2) {
-	//			cell_x -= diagonal; //WARLOCK espaÁamento na coluna vertical
-	//		}
+		//warlock diagonal lista
+		if(diagonal > 0 || diagonal < 0)
+			if (r < rown/2-1)
+				cell_x += diagonal;
+			else if (r > rown/2+1)
+				cell_x -= diagonal;
 		
 	}
 }
 
-void draw_menu_window(const game_set& gar, const menu_array& gc, struct cell_t* cell, int coln, int rown, int start, int pos, bool use_ident, merge_t merge, bool center)
+void draw_menu_window(const game_set& gar, const menu_array& gc, struct cell_t* cell, int coln, int rown, int start, int pos, bool use_ident, bool center)
 {
 	for(int r=0;r<rown;++r) {
 		for(int c=0;c<coln;++c) {
@@ -975,9 +1084,9 @@ void draw_menu_window(const game_set& gar, const menu_array& gc, struct cell_t* 
 				if (gc[start]->has_game()) {
 					const game& g = gc[start]->game_get();
 					if (center)
-						draw_menu_game_center(gar, g, cell->x, cell->y, cell->dx, cell->dy, start == pos, merge);
+						draw_menu_game_center(gar, g, cell->x, cell->y, cell->dx, cell->dy, start == pos);
 					else
-						draw_menu_game_left(gar, g, cell->x, cell->y, cell->dx, start == pos, merge, use_ident ? gc[start]->ident_get() : 0);
+						draw_menu_game_left(gar, g, cell->x, cell->y, cell->dx, start == pos, use_ident ? gc[start]->ident_get() : 0);
 				} else {
 					draw_menu_desc(gc[start]->desc_get(), cell->x, cell->y, cell->dx, start == pos);
 				}
@@ -990,14 +1099,15 @@ void draw_menu_window(const game_set& gar, const menu_array& gc, struct cell_t* 
 	}
 }
 
-void draw_list_window(const game_set& gar, const menu_array& gc, struct cell_t* cell, int coln, int rown, int start, int pos, bool use_ident, merge_t merge, const string align)
+void draw_list_window(const game_set& gar, const menu_array& gc, struct cell_t* cell, int coln, int rown, int start, int pos, bool use_ident, const string align)
 {
+	
 	for(int r=0;r<rown;++r) {
 		for(int c=0;c<coln;++c) {
 			if (start < gc.size()) {
 				if (gc[start]->has_game()) {
 					const game& g = gc[start]->game_get();
-					draw_list_game(g, cell->x, cell->y, cell->dx, start == pos, align, start);
+					draw_list_game(g, cell->x, cell->y, cell->dx, start == pos, align,start);
 				} else {
 					draw_menu_desc(gc[start]->desc_get(), cell->x, cell->y, cell->dx, start == pos);
 				}
@@ -1134,7 +1244,9 @@ bool backdrop_find_preview_default(resource& path, unsigned& aspectx, unsigned& 
 			path = rs.preview_default_icon;
 		break;
 	case preview_marquee :
-		if (rs.preview_default_marquee != "none")
+		if (rs.current_emu->user_default_marquee_path_get() != "none")
+			path = rs.current_emu->user_default_marquee_path_get();
+		else	if (rs.preview_default_marquee != "none")
 			path = rs.preview_default_marquee;
 		break;
 	case preview_title :
@@ -1142,7 +1254,9 @@ bool backdrop_find_preview_default(resource& path, unsigned& aspectx, unsigned& 
 			path = rs.preview_default_title;
 		break;
 	case preview_snap :
-		if (rs.preview_default_snap != "none")
+		if (rs.current_emu->user_default_snap_path_get() != "none")
+			path = rs.current_emu->user_default_snap_path_get();
+		else	if (rs.preview_default_snap != "none")
 			path = rs.preview_default_snap;
 		break;
 	case preview_flyer :
@@ -1188,7 +1302,7 @@ void backdrop_game_set(const game* effective_game, unsigned back_pos, listprevie
 		int_clip_clear(back_pos);
 	}
 
-	if (backdrop_find_preview_default(backdrop_res, aspectx, aspecty, preview, effective_game, rs)) {
+	if (effective_game && backdrop_find_preview_default(backdrop_res, aspectx, aspecty, preview, effective_game, rs)) {
 		int_backdrop_set(back_pos, backdrop_res, highlight, aspectx, aspecty);
 		if (current)
 			rs.current_backdrop = backdrop_res;
@@ -1198,6 +1312,46 @@ void backdrop_game_set(const game* effective_game, unsigned back_pos, listprevie
 			rs.current_backdrop = resource();
 	}
 }
+
+void backdrop_game_set2(const game* effective_game, unsigned back_pos, listpreview_t preview, bool current, bool highlight, bool clip, config_state& rs)
+{
+	resource backdrop_res;
+	resource clip_res;
+
+	unsigned aspectx;
+	unsigned aspecty;
+	unsigned image;
+	if (effective_game && (preview == preview_snap || preview == preview_title)) {
+		aspectx = effective_game->aspectx_get();
+		aspecty = effective_game->aspecty_get();
+		
+		if (clip && preview == preview_snap) {
+			if (rs.clip_mode != clip_none && effective_game->preview_find(clip_res, &game::preview_clip_get)) {
+				int_clip_set(back_pos, clip_res, aspectx, aspecty, current);
+			} else {
+				int_clip_clear(back_pos);
+			}
+		} else {
+			int_clip_clear(back_pos);
+		}
+	} else {
+		aspectx = 0;
+		aspecty = 0;
+
+		int_clip_clear(back_pos);
+	}
+
+	if (effective_game && backdrop_find_preview_default(backdrop_res, aspectx, aspecty, preview, effective_game, rs)) {
+		int_backdrop_set(back_pos, backdrop_res, highlight, aspectx, aspecty);
+		if (current)
+			rs.current_backdrop = backdrop_res;
+	} else {
+		int_backdrop_clear(back_pos, highlight);
+		if (current)
+			rs.current_backdrop = resource();
+	}
+}
+
 
 void backdrop_index_set(unsigned pos, menu_array& gc, unsigned back_pos, listpreview_t preview, bool current, bool highlight, bool clip, config_state& rs)
 {
@@ -1354,7 +1508,16 @@ void disable_fonts() {
 	if(int_font_info_3)	int_disable_font_info(int_font_info_3);
 	if(int_font_info_4)	int_disable_font_info(int_font_info_4);
 	if(int_font_info_5)	int_disable_font_info(int_font_info_5);
+	if(int_font_info_6)	int_disable_font_info(int_font_info_6);
+	if(int_font_info_7)	int_disable_font_info(int_font_info_7);
+	if(int_font_info_8)	int_disable_font_info(int_font_info_8);
+	if(int_font_info_9)	int_disable_font_info(int_font_info_9);
+	if(int_font_info_10)    int_disable_font_info(int_font_info_10);
 }
+
+
+
+
 
 void color_default_load() {
 	COLOR_HELP_NORMAL = DCOLOR_HELP_NORMAL;
@@ -1365,8 +1528,6 @@ void color_default_load() {
 	COLOR_CHOICE_HIDDEN = DCOLOR_CHOICE_HIDDEN;
 	COLOR_CHOICE_HIDDEN_SELECT = DCOLOR_CHOICE_HIDDEN_SELECT;
 	COLOR_MENU_NORMAL = DCOLOR_MENU_NORMAL;
-	COLOR_MENU_FICHA  = DCOLOR_MENU_FICHA;
-	COLOR_MENU_NFICHA  = DCOLOR_MENU_NFICHA;
 	COLOR_MENU_HIDDEN = DCOLOR_MENU_HIDDEN;
 	COLOR_MENU_TAG = DCOLOR_MENU_TAG;
 	COLOR_MENU_SELECT = DCOLOR_MENU_SELECT;
@@ -1390,8 +1551,6 @@ void color_rc_load() {
 	COLOR_CHOICE_HIDDEN = RCOLOR_CHOICE_HIDDEN;
 	COLOR_CHOICE_HIDDEN_SELECT = RCOLOR_CHOICE_HIDDEN_SELECT;
 	COLOR_MENU_NORMAL = RCOLOR_MENU_NORMAL;
-	COLOR_MENU_FICHA  = RCOLOR_MENU_FICHA;
-	COLOR_MENU_NFICHA  = RCOLOR_MENU_NFICHA;
 	COLOR_MENU_HIDDEN = RCOLOR_MENU_HIDDEN;
 	COLOR_MENU_TAG = RCOLOR_MENU_TAG;
 	COLOR_MENU_SELECT = RCOLOR_MENU_SELECT;
@@ -1408,7 +1567,6 @@ void color_rc_load() {
 
 static int run_menu_user(config_state& rs, bool flipxy, menu_array& gc, sort_item_func* category_extract, bool silent, string over_msg)
 {
-	//int TipoEmu=0; //branco
 	int coln; // number of columns
 	int rown; // number of rows
 
@@ -1462,7 +1620,8 @@ static int run_menu_user(config_state& rs, bool flipxy, menu_array& gc, sort_ite
 	struct cell_t* backdrop_map; // map of the backdrop positions
 	struct cell_t* backdrop_map_bis; // alternate map of the backdrop positions
 
-	unsigned game_count; // counter of game in the container
+	unsigned game_count = 0; // counter of game in the container
+	unsigned game_selected_count = 0;
 
 	unsigned ui_right; //refact = 0; // user limit
 	unsigned ui_left; //refact = 0;
@@ -1471,37 +1630,36 @@ static int run_menu_user(config_state& rs, bool flipxy, menu_array& gc, sort_ite
 	
 	string emu_start = "none";
 	string img_background;
+	string img_bolinha;
 	string font_path;
 	unsigned fontsize_X = 0;
 	unsigned fontsize_Y = 0;
 
-	emulator* emu_actual = 0;
-
 	// RECOGIDA DE DATOS DEL EMU NO LAYOUT
 	if (rs.menu_systems->state_get()) {
-		emu_actual = rs.menu_systems;
+		rs.current_emu = rs.menu_systems;
 	} else {
 		for (pemulator_container::iterator e=rs.emu.begin();e!=rs.emu.end();++e) {
 			if ((*e)->state_get()) {
-				emu_actual = *e;
+				rs.current_emu = *e;
 				break;
 			}
 		}
 	}
 
-	emu_start = emu_actual->nocustom_start_path_get();
+	emu_start = rs.current_emu->nocustom_start_path_get();
 	if (emu_start == "")
 		emu_start = "none";
 
-	img_background = emu_actual->nocustom_background_path_get();
+	img_background = rs.current_emu->nocustom_background_path_get();
 	if (img_background == "" || img_background == "default")
 		img_background = rs.ui_back;
 
-	font_path = emu_actual->nocustom_font_path_get();
+	font_path = rs.current_emu->nocustom_font_path_get();
 	if (font_path == "" || font_path == "default")
 		font_path = rs.video_font_path;
 
-	string fontsize = emu_actual->nocustom_font_size_get();
+	string fontsize = rs.current_emu->nocustom_font_size_get();
 	if (fontsize == "") {
 		fontsize_X= rs.video_fontx;
 		fontsize_Y = rs.video_fonty;
@@ -1524,20 +1682,19 @@ static int run_menu_user(config_state& rs, bool flipxy, menu_array& gc, sort_ite
 
 	color_rc_load();
 
-	string c_font = emu_actual->nocustom_font_color_get();
+	string c_font = rs.current_emu->nocustom_font_color_get();
 	if(color_nocustom(COLOR_MENU_NORMAL, c_font, false, video_color_def(), rs.ui_translucency)) {
-		COLOR_HELP_NORMAL = COLOR_HELP_TAG = COLOR_CHOICE_TITLE = COLOR_CHOICE_NORMAL = COLOR_MENU_NORMAL;
-		COLOR_CHOICE_HIDDEN = COLOR_MENU_HIDDEN = COLOR_MENU_TAG = COLOR_MENU_NORMAL;
+		COLOR_MENU_HIDDEN = COLOR_MENU_TAG = COLOR_MENU_NORMAL;
 		COLOR_MENU_BAR_TAG = COLOR_MENU_BAR_HIDDEN = COLOR_MENU_GRID = COLOR_MENU_NORMAL;
 		COLOR_MENU_BACKDROP = COLOR_MENU_ICON = COLOR_MENU_CURSOR = COLOR_MENU_NORMAL;
 		COLOR_MENU_BAR = COLOR_MENU_NORMAL;
 
-		string c_font_select = emu_actual->nocustom_font_color_select_get();
+		string c_font_select = rs.current_emu->nocustom_font_color_select_get();
 		if(c_font_select == "")
 			invertir_colores(c_font_select, c_font);
 
 		if(color_nocustom(COLOR_MENU_SELECT, c_font_select, true, video_color_def(), rs.ui_translucency))
-			COLOR_MENU_TAG_SELECT = COLOR_CHOICE_SELECT = COLOR_CHOICE_HIDDEN_SELECT = COLOR_MENU_HIDDEN_SELECT = COLOR_MENU_SELECT;
+			COLOR_MENU_TAG_SELECT = COLOR_MENU_HIDDEN_SELECT = COLOR_MENU_SELECT;
 	}
 	
 	log_std(("menu: user begin\n"));
@@ -2231,20 +2388,27 @@ static int run_menu_user(config_state& rs, bool flipxy, menu_array& gc, sort_ite
 				++game_count;
 	}
 
-	
+
 	if (rs.current_game != 0) {
 		EmuladorAtivo.clear(); 
 		EmuladorAtivo = rs.current_game->emulator_get()->user_name_get();
 		TipoEmu = 0;
 		int Ret=0;
     	char buffer1[100];
-		Ret = GetPrivateProfileStringA("MODOFICHAS",EmuladorAtivo.c_str(),"0", buffer1, 100, ".\\advmenu.ini");  //Warlock (mechido j·) - definir qual emulador abrir· em ficha/tempo
+		
+		
+		//Ret = GetPrivateProfileStringA("MODOFICHAS",EmuladorAtivo.c_str(),"0", buffer1, 100, ".\\advmenu.ini");  //Warlock (mechido j√°) - definir qual emulador abrir√° em ficha/tempo
+		string path =  ".\\ini\\" + EmuladorAtivo + ".ini";
+		Ret = GetPrivateProfileStringA("configuracao","MODOFICHAS","0", buffer1, 100, path.c_str());  //Warlock (mechido j√°) - definir qual emulador abrir√° em ficha/tempo
 		if ( Ret ){							
 			if ( atoi(buffer1) != 0)
 				TipoEmu = 1;
 		} 
+		
+
+		
+
 	} 
-	
 	bool done = false;
 	int key = 0;
 
@@ -2285,12 +2449,14 @@ static int run_menu_user(config_state& rs, bool flipxy, menu_array& gc, sort_ite
 		}
 #endif
 
+		game_selected_count = pos_base + pos_rel + 1;
+		
 		if (name_dy)
-			draw_menu_window(rs.gar, gc, int_map, coln, rown, pos_base, pos_base+pos_rel, use_ident, rs.merge, rs.mode_get() == mode_tile_icon);
+			draw_menu_window(rs.gar, gc, int_map, coln, rown, pos_base, pos_base+pos_rel, use_ident, rs.mode_get() == mode_tile_icon);
 		if (bar_top_dy)
-			draw_menu_bar(rs.current_game, rs.include_favorites_get(), game_count, bar_top_x, bar_top_y, bar_top_dx);
+			draw_menu_bar(rs.current_game, rs.include_favorites_get(), rs.menu_systems->state_get(), bar_top_x, bar_top_y, bar_top_dx);
 		if (bar_bottom_dy)
-			draw_menu_info(rs.gar, rs.current_game, bar_bottom_x, bar_bottom_y, bar_bottom_dx, rs.merge, effective_preview, rs.sort_get(), rs.difficulty_effective, rs.lock_effective, TipoEmu);
+			draw_menu_info(rs.gar, rs.current_game, game_selected_count, game_count, rs.lock_effective, rs.menu_systems->state_get(), bar_bottom_x, bar_bottom_y, bar_bottom_dx,TipoEmu);
 		if (bar_right_dx)
 			draw_menu_right(bar_right_x, bar_right_y, bar_right_dx, bar_right_dy, pos_base, pos_rel_max, pos_base_upper + pos_rel_max);
 		if (bar_left_dx)
@@ -2397,6 +2563,9 @@ static int run_menu_user(config_state& rs, bool flipxy, menu_array& gc, sort_ite
 
 		key = int_event_get(false);
 
+		if (key == EVENT_SPACE)
+			key = int_event_get(false);
+
 		log_std(("menu: key %d\n", key));
 
 		string oldfast = rs.fast;
@@ -2458,58 +2627,61 @@ static int run_menu_user(config_state& rs, bool flipxy, menu_array& gc, sort_ite
 			case EVENT_LOCK :
 			case EVENT_IDLE_0 :
 			case EVENT_IDLE_1 :
+			case EVENT_IDLE_EXIT :
+			case EVENT_HELP :
+			case EVENT_MINFO :
+			case EVENT_FAVORITES_NEXT :
 				done = true;
+				break;
+			// Eventos bloqueados si el Menu de Sistemas esta activado
+			case EVENT_EMU_PRE :
+			case EVENT_EMU_NEXT :
+				if (!rs.menu_systems_activated) {
+					is_loaded = false;
+					done = true;
+				}
+				break;
+			// Eventos permitidos si el Menu de Sistemas esta activado y no cargado
+			case EVENT_ESC :
+			case EVENT_OFF :
+				if (rs.menu_systems_activated && !rs.menu_systems->state_get()) {
+					done = true;
+				}
 				break;
 		}
 
+		// Eventos bloqueados por LOCKED
 		if (!rs.lock_effective) {
-			// eventos desactivados si MenuSystems listado
-			if (!rs.menu_systems->state_get()) {
-				// eventos desactivados si MenuSystems activado
-				if (!rs.menu_systems_activated) {
-					switch (key) {
-						case EVENT_EMU_PRE :				//F6
-						case EVENT_EMU_NEXT :				//F7
-							is_loaded = false;
-							done = true;
-							break;
-					}
-				}
-				switch (key) {
-					case EVENT_SETFAVORITES :			//F9
-						if (!rs.current_game) break;
-					case EVENT_TYPE :							//F3
-					case EVENT_SETTYPE :						//F10
-						done = true;
-						break;
-				}
-			}
-			// eventos comunes
 			switch (key) {
+				case EVENT_ESC :
+					if (!done && ((rs.exit_mode == exit_normal || rs.exit_mode == exit_all || rs.console_mode)
+					              || (rs.security_exit && rs.exit_mode == exit_shutdown)))
+						done = true;
+					break;
+				case EVENT_OFF :
+					if (!done && (rs.exit_mode == exit_shutdown || rs.exit_mode == exit_all))
+						done = true;
+					break;
+				case EVENT_SETFAVORITES :
+				case EVENT_SETTYPE :
+					if (!rs.current_game)
+						break;
+				case EVENT_TYPE :
+					if (rs.menu_systems->state_get())
+						break;
 				case EVENT_ROTATE :
 				case EVENT_MODE :
-				case EVENT_HELP :
-				case EVENT_FAVORITES_NEXT :
 				case EVENT_ATTRIB :
 				case EVENT_SORT :
 				case EVENT_COMMAND :
 				case EVENT_MENU :
 				case EVENT_PREVIEW :
 				case EVENT_ESCEMULE:
-				case EVENT_SETCOIN :   //warlock Set coin
 					done = true;
-					break;
-				case EVENT_ESC : //system("taskkill -f -im HotCoin.exe");   //Warlock
-						if (rs.exit_mode == exit_normal || rs.exit_mode == exit_all || rs.console_mode)
-						done = true;
-					break;
-				case EVENT_OFF :
-					if (rs.exit_mode == exit_shutdown || rs.exit_mode == exit_all)
-						done = true;
 					break;
 			}
 		}
-		
+			
 		if (pos_rel + pos_base < gc.size() && gc[pos_rel + pos_base]->has_game()) {
 			rs.current_game = &gc[pos_rel+pos_base]->game_get();
 			rs.current_clone = 0;
@@ -2518,7 +2690,7 @@ static int run_menu_user(config_state& rs, bool flipxy, menu_array& gc, sort_ite
 			rs.current_clone = 0;
 		}
 	}
-
+		
 	if (key == EVENT_IDLE_0) {
 		if (gc.size() > 0) {
 			unsigned pos = rand() % gc.size();
@@ -2584,6 +2756,7 @@ static int run_menu_layout(config_state& rs, bool flipxy, menu_array& gc, sort_i
 	// FONDO
 	bool imagen_fondo_cargada = false;
 	string img_background;
+	string img_bolinha;
 	
 	// LISTADO DE JUEGOS
 	unsigned ui_list_x = video_size_x()/10, ui_list_y = video_size_y()/10, ui_list_dx = video_size_x()/5, ui_list_dy = video_size_y()/3;
@@ -2619,6 +2792,28 @@ static int run_menu_layout(config_state& rs, bool flipxy, menu_array& gc, sort_i
 	unsigned bar_info_5_x = 0, bar_info_5_y = 0, bar_info_5_dx = 0, bar_info_5_dy = 0;
 	string bar_info_5_text = "", bar_info_5_font_path="", bar_info_5_align="left";
 	int bar_info_5_font_dx = 0;
+		unsigned bar_info_6_x = 0, bar_info_6_y = 0, bar_info_6_dx = 0, bar_info_6_dy = 0;
+	string bar_info_6_text = "", bar_info_6_font_path="", bar_info_6_align="left";
+	int bar_info_6_font_dx = 0;
+
+	unsigned bar_info_7_x = 0, bar_info_7_y = 0, bar_info_7_dx = 0, bar_info_7_dy = 0;
+	string bar_info_7_text = "", bar_info_7_font_path="", bar_info_7_align="left";
+	int bar_info_7_font_dx = 0;
+
+	unsigned bar_info_8_x = 0, bar_info_8_y = 0, bar_info_8_dx = 0, bar_info_8_dy = 0;
+	string bar_info_8_text = "", bar_info_8_font_path="", bar_info_8_align="left";
+	int bar_info_8_font_dx = 0;
+
+	unsigned bar_info_9_x = 0, bar_info_9_y = 0, bar_info_9_dx = 0, bar_info_9_dy = 0;
+	string bar_info_9_text = "", bar_info_9_font_path="", bar_info_9_align="left";
+	int bar_info_9_font_dx = 0;
+
+	unsigned bar_info_10_x = 0, bar_info_10_y = 0, bar_info_10_dx = 0, bar_info_10_dy = 0;
+	string bar_info_10_text = "", bar_info_10_font_path="", bar_info_10_align="left";
+	int bar_info_10_font_dx = 0;
+	
+	
+	
 	
 	// FUENTE DEL MENU	
 	string menu_font_path = "none";
@@ -2638,20 +2833,21 @@ static int run_menu_layout(config_state& rs, bool flipxy, menu_array& gc, sort_i
 	color_default_load(); // carga los colores por defecto
 
 	// OBTIENE EL EMULADOR ACTUAL
-	emulator* emu_actual = 0;
 	if (rs.menu_systems->state_get()) {
-		emu_actual = rs.menu_systems;
+		rs.current_emu = rs.menu_systems;
 	} else {
 		for (pemulator_container::iterator e=rs.emu.begin();e!=rs.emu.end();++e) {
 			if ((*e)->state_get()) {
-				emu_actual = *e;
+				rs.current_emu = *e;
 				break;
 			}
 		}
 	}
 
 	// RECOGIDA DE DATOS DEL LAYOUT
-	string lay_path = emu_actual->custom_file_path_get();
+	
+	bool CheckFile = false;
+	string lay_path = rs.current_emu->custom_file_path_get();
 	for(playout_container::iterator j = rs.lay_cont.begin();j!=rs.lay_cont.end();j++) {
 		if((*j)->name_get() == lay_path) {
 
@@ -2665,10 +2861,32 @@ static int run_menu_layout(config_state& rs, bool flipxy, menu_array& gc, sort_i
 			if (emu_start == "")
 				emu_start = "none";
 
+			
 			img_background = (*j)->custom_background_path_get();
+			struct stat buffer;  
+			CheckFile = (stat (img_background.c_str(), &buffer) == 0);
+			if (PosicaoDaBarra >= 0 && !CheckFile){
+				stringstream ss;
+				ss << "(" << PosicaoDaBarra + 1 << ").png";
+				string str = img_background;
+							
+				size_t lengthPng = string(".png").size();
+				str.replace(str.size()-lengthPng, lengthPng, ss.str());
+
+				img_background = str.c_str();
+			}
+
+				
 			if (img_background == "")
 				img_background = "none";
-
+	
+	
+			//MessageBox(NULL,img_background.c_str(),"",MB_OK|MB_SYSTEMMODAL);
+			/*
+			img_bolinha = (*j)->custom_bolinha_get();
+			if (img_bolinha == "")
+				img_bolinha = "none";
+			*/
 			string c_background = (*j)->custom_background_color_get();
 			if(!color_custom(LCOLOR_BACKGROUND, c_background, flag_special, video_color_def())) {
 				LCOLOR_BACKGROUND = DCOLOR_BACKGROUND;
@@ -2841,6 +3059,26 @@ static int run_menu_layout(config_state& rs, bool flipxy, menu_array& gc, sort_i
 					}
 				}
 			}
+			
+			/*
+			//MessageBox (NULL,preview_cabinet.c_str() , "titulo", 1);
+			//char path_bolinha= "D:\\Imagens\\7b8.png";
+			string win_bolinha_pos_size = (*j)->custom_bolinha_get();
+			if (win_bolinha_pos_size != "" && win_bolinha_pos_size != "none") {
+				string a0, a1, a2, a3;
+				if (config_split_custom(win_bolinha_pos_size, a0, a1, a2, a3)) {
+					if(a3 != "0") {
+						backdrop_win[mac].x = atoi(a0.c_str());
+						backdrop_win[mac].y = atoi(a1.c_str());
+						backdrop_win[mac].dx = atoi(a2.c_str());
+						backdrop_win[mac].dy = atoi(a3.c_str());
+						backdrop_win[mac].preview = preview_flyer;
+						mac++;
+					}
+				}
+			}
+			*/
+			
 			string win_icons_pos_size = (*j)->custom_win_icons_get(); 
 			if (win_icons_pos_size != "" && win_icons_pos_size != "none") {
 				string a0, a1, a2, a3;
@@ -3003,17 +3241,144 @@ static int run_menu_layout(config_state& rs, bool flipxy, menu_array& gc, sort_i
 				if (bar_info_5_align == "")
 					bar_info_5_align = "left";
 
+				string c_info = (*j)->custom_bar_info_5_color_get();
+				if(!color_custom(LCOLOR_BAR_INFO_E, c_info, flag_special, video_color_def()))
+					LCOLOR_BAR_INFO_E = DCOLOR_MENU_NORMAL;
+			}
 
-//VERMELHO / VERDE - COR NA FICHA		
+			
+			string bar_info_6_pos_size = (*j)->custom_bar_info_6_get();
+			if (bar_info_6_pos_size != "" && bar_info_6_pos_size != "none") {
+				string a0, a1, a2, a3;
+				if (config_split_custom(bar_info_6_pos_size, a0, a1, a2, a3)) {
+					bar_info_6_x = atoi(a0.c_str());
+					bar_info_6_y = atoi(a1.c_str());
+					bar_info_6_dx = atoi(a2.c_str());
+					bar_info_6_dy = atoi(a3.c_str());
+				}
+
+				bar_info_6_font_path = (*j)->custom_bar_info_6_font_get();
+				if(bar_info_6_font_path == "")
+					bar_info_6_font_path = "none";
+
+				bar_info_6_text = (*j)->custom_bar_info_6_text_get();
+
+				bar_info_6_align = (*j)->custom_bar_info_6_align_get();
+				if (bar_info_6_align == "")
+					bar_info_6_align = "left";
+
+				string c_info = (*j)->custom_bar_info_6_color_get();
+				if(!color_custom(LCOLOR_BAR_INFO_F, c_info, flag_special, video_color_def()))
+					LCOLOR_BAR_INFO_F = DCOLOR_MENU_NORMAL;
+			}
+
+			string bar_info_7_pos_size = (*j)->custom_bar_info_7_get();
+			if (bar_info_7_pos_size != "" && bar_info_7_pos_size != "none") {
+				string a0, a1, a2, a3;
+				if (config_split_custom(bar_info_7_pos_size, a0, a1, a2, a3)) {
+					bar_info_7_x = atoi(a0.c_str());
+					bar_info_7_y = atoi(a1.c_str());
+					bar_info_7_dx = atoi(a2.c_str());
+					bar_info_7_dy = atoi(a3.c_str());
+				}
+
+				bar_info_7_font_path = (*j)->custom_bar_info_7_font_get();
+				if(bar_info_7_font_path == "")
+					bar_info_7_font_path = "none";
+
+				bar_info_7_text = (*j)->custom_bar_info_7_text_get();
+
+				bar_info_7_align = (*j)->custom_bar_info_7_align_get();
+				if (bar_info_7_align == "")
+					bar_info_7_align = "left";
+
+				string c_info = (*j)->custom_bar_info_7_color_get();
+				if(!color_custom(LCOLOR_BAR_INFO_G, c_info, flag_special, video_color_def()))
+					LCOLOR_BAR_INFO_G = DCOLOR_MENU_NORMAL;
+			}
+
+			string bar_info_8_pos_size = (*j)->custom_bar_info_8_get();
+			if (bar_info_8_pos_size != "" && bar_info_8_pos_size != "none") {
+				string a0, a1, a2, a3;
+				if (config_split_custom(bar_info_8_pos_size, a0, a1, a2, a3)) {
+					bar_info_8_x = atoi(a0.c_str());
+					bar_info_8_y = atoi(a1.c_str());
+					bar_info_8_dx = atoi(a2.c_str());
+					bar_info_8_dy = atoi(a3.c_str());
+				}
+
+				bar_info_8_font_path = (*j)->custom_bar_info_8_font_get();
+				if(bar_info_8_font_path == "")
+					bar_info_8_font_path = "none";
+
+				bar_info_8_text = (*j)->custom_bar_info_8_text_get();
+
+				bar_info_8_align = (*j)->custom_bar_info_8_align_get();
+				if (bar_info_8_align == "")
+					bar_info_8_align = "left";
+
+				string c_info = (*j)->custom_bar_info_8_color_get();
+				if(!color_custom(LCOLOR_BAR_INFO_H, c_info, flag_special, video_color_def()))
+					LCOLOR_BAR_INFO_H = DCOLOR_MENU_NORMAL;
+			}
+
+			string bar_info_9_pos_size = (*j)->custom_bar_info_9_get();
+			if (bar_info_9_pos_size != "" && bar_info_9_pos_size != "none") {
+				string a0, a1, a2, a3;
+				if (config_split_custom(bar_info_9_pos_size, a0, a1, a2, a3)) {
+					bar_info_9_x = atoi(a0.c_str());
+					bar_info_9_y = atoi(a1.c_str());
+					bar_info_9_dx = atoi(a2.c_str());
+					bar_info_9_dy = atoi(a3.c_str());
+				}
+
+				bar_info_9_font_path = (*j)->custom_bar_info_9_font_get();
+				if(bar_info_9_font_path == "")
+					bar_info_9_font_path = "none";
+
+				bar_info_9_text = (*j)->custom_bar_info_9_text_get();
+
+				bar_info_9_align = (*j)->custom_bar_info_9_align_get();
+				if (bar_info_9_align == "")
+					bar_info_9_align = "left";
+
+				string c_info = (*j)->custom_bar_info_9_color_get();
+				if(!color_custom(LCOLOR_BAR_INFO_I, c_info, flag_special, video_color_def()))
+					LCOLOR_BAR_INFO_I = DCOLOR_MENU_NORMAL;
+			}
+
+			string bar_info_10_pos_size = (*j)->custom_bar_info_10_get();
+			if (bar_info_10_pos_size != "" && bar_info_10_pos_size != "none") {
+				string a0, a1, a2, a3;
+				if (config_split_custom(bar_info_10_pos_size, a0, a1, a2, a3)) {
+					bar_info_10_x = atoi(a0.c_str());
+					bar_info_10_y = atoi(a1.c_str());
+					bar_info_10_dx = atoi(a2.c_str());
+					bar_info_10_dy = atoi(a3.c_str());
+				}
+
+				bar_info_10_font_path = (*j)->custom_bar_info_10_font_get();
+				if(bar_info_10_font_path == "")
+					bar_info_10_font_path = "none";
+
+				bar_info_10_text = (*j)->custom_bar_info_10_text_get();
+
+				bar_info_10_align = (*j)->custom_bar_info_10_align_get();
+				if (bar_info_10_align == "")
+					bar_info_10_align = "left";
+
+		//VERMELHO / VERDE - COR NA FICHA		
 		int RetTipo=0,RetFichas=0,Fichas=0;
 		char buffer[100];
     	char buffer1[100];
 		
 		EmuladorAtivo.clear(); 
-		EmuladorAtivo = emu_actual->user_name_get();
+		EmuladorAtivo = rs.current_emu->user_name_get();
 		TipoEmu = 0;
 		RetFichas = GetPrivateProfileStringA("FICHEIRO","FICHAS","0", buffer, 100, ".\\advmenu.ini");
-		RetTipo   = GetPrivateProfileStringA("MODOFICHAS",EmuladorAtivo.c_str(),"0", buffer1, 100, ".\\advmenu.ini");  //Warlock (mechido j·) - definir qual emulador abrir· em ficha/tempo
+		//RetTipo   = GetPrivateProfileStringA("MODOFICHAS",EmuladorAtivo.c_str(),"0", buffer1, 100, ".\\advmenu.ini");  //Warlock (mechido j√°) - definir qual emulador abrir√° em ficha/tempo
+		string path =  ".\\ini\\" + EmuladorAtivo + ".ini";
+		RetTipo   = GetPrivateProfileStringA("configuracao","MODOFICHAS","0", buffer1, 100, path.c_str());  //Warlock (mechido j√°) - definir qual emulador abrir√° em ficha/tempo
 		Fichas    = atoi(buffer);
 		
 		if ( RetTipo ){							
@@ -3022,20 +3387,22 @@ static int run_menu_layout(config_state& rs, bool flipxy, menu_array& gc, sort_i
 		} 
 				
 					if ( Fichas < ValorDaFicha && TipoEmu  && RetFichas){
-						string c_info = (*j)->custom_bar_info_5_colorx_get();
-						if(!color_custom(LCOLOR_BAR_INFO_E, c_info, flag_special, video_color_def()))
-						LCOLOR_BAR_INFO_E = DCOLOR_MENU_NORMAL;
+						string c_info = (*j)->custom_bar_info_10_colorx_get();
+						if(!color_custom(LCOLOR_BAR_INFO_J, c_info, flag_special, video_color_def()))
+						LCOLOR_BAR_INFO_J = DCOLOR_MENU_NORMAL;
 					}else if ( Fichas < 60000  && !TipoEmu && RetFichas){
-						string c_info = (*j)->custom_bar_info_5_colorx_get();
-						if(!color_custom(LCOLOR_BAR_INFO_E, c_info, flag_special, video_color_def()))
-						LCOLOR_BAR_INFO_E = DCOLOR_MENU_NORMAL;
+						string c_info = (*j)->custom_bar_info_10_colorx_get();
+						if(!color_custom(LCOLOR_BAR_INFO_J, c_info, flag_special, video_color_def()))
+						LCOLOR_BAR_INFO_J = DCOLOR_MENU_NORMAL;
 					}else{
-						string c_info = (*j)->custom_bar_info_5_color_get();
-						if(!color_custom(LCOLOR_BAR_INFO_E, c_info, flag_special, video_color_def()))
-						LCOLOR_BAR_INFO_E = DCOLOR_MENU_NORMAL;
+						string c_info = (*j)->custom_bar_info_10_color_get();
+						if(!color_custom(LCOLOR_BAR_INFO_J, c_info, flag_special, video_color_def()))
+						LCOLOR_BAR_INFO_J = DCOLOR_MENU_NORMAL;
 					}
-		}
-		break;
+			
+			}
+			
+			break;
 		}
 	}
 	
@@ -3045,6 +3412,7 @@ static int run_menu_layout(config_state& rs, bool flipxy, menu_array& gc, sort_i
 	} else {
 		int_clear(COLOR_MENU_GRID.background);
 	}
+	
 	
 	// load the background image
 	if (img_background != "none") {
@@ -3134,6 +3502,46 @@ static int run_menu_layout(config_state& rs, bool flipxy, menu_array& gc, sort_i
 					bar_info_5_dy = unsigned(bar_info_5_dy * coef_scale_y);
 					bar_info_5_font_dx = bar_info_5_dy;
 				}
+					if(bar_info_6_dx != 0) {
+					bar_info_6_x = unsigned(bar_info_6_x * coef_scale_x);
+					bar_info_6_y = unsigned(bar_info_6_y * coef_scale_y);
+					bar_info_6_dx = unsigned(bar_info_6_dx * coef_scale_x);
+
+					bar_info_6_dy = unsigned(bar_info_6_dy * coef_scale_y);
+					bar_info_6_font_dx = bar_info_6_dy;
+				}
+				if(bar_info_7_dx != 0) {
+					bar_info_7_x = unsigned(bar_info_7_x * coef_scale_x);
+					bar_info_7_y = unsigned(bar_info_7_y * coef_scale_y);
+					bar_info_7_dx = unsigned(bar_info_7_dx * coef_scale_x);
+
+					bar_info_7_dy = unsigned(bar_info_7_dy * coef_scale_y);
+					bar_info_7_font_dx = bar_info_7_dy;
+				}
+				if(bar_info_8_dx != 0) {
+					bar_info_8_x = unsigned(bar_info_8_x * coef_scale_x);
+					bar_info_8_y = unsigned(bar_info_8_y * coef_scale_y);
+					bar_info_8_dx = unsigned(bar_info_8_dx * coef_scale_x);
+
+					bar_info_8_dy = unsigned(bar_info_8_dy * coef_scale_y);
+					bar_info_8_font_dx = bar_info_8_dy;
+				}
+				if(bar_info_9_dx != 0) {
+					bar_info_9_x = unsigned(bar_info_9_x * coef_scale_x);
+					bar_info_9_y = unsigned(bar_info_9_y * coef_scale_y);
+					bar_info_9_dx = unsigned(bar_info_9_dx * coef_scale_x);
+
+					bar_info_9_dy = unsigned(bar_info_9_dy * coef_scale_y);
+					bar_info_9_font_dx = bar_info_9_dy;
+				}
+				if(bar_info_10_dx != 0) {
+					bar_info_10_x = unsigned(bar_info_10_x * coef_scale_x);
+					bar_info_10_y = unsigned(bar_info_10_y * coef_scale_y);
+					bar_info_10_dx = unsigned(bar_info_10_dx * coef_scale_x);
+
+					bar_info_10_dy = unsigned(bar_info_10_dy * coef_scale_y);
+					bar_info_10_font_dx = bar_info_10_dy;
+				}
 				
 			}
 			imagen_fondo_cargada = true;
@@ -3152,6 +3560,11 @@ static int run_menu_layout(config_state& rs, bool flipxy, menu_array& gc, sort_i
 	comprobar_medidas(bar_info_3_x, bar_info_3_y, bar_info_3_dx, bar_info_3_dy);
 	comprobar_medidas(bar_info_4_x, bar_info_4_y, bar_info_4_dx, bar_info_4_dy);
 	comprobar_medidas(bar_info_5_x, bar_info_5_y, bar_info_5_dx, bar_info_5_dy);
+	comprobar_medidas(bar_info_6_x, bar_info_6_y, bar_info_6_dx, bar_info_6_dy);
+	comprobar_medidas(bar_info_7_x, bar_info_7_y, bar_info_7_dx, bar_info_7_dy);
+	comprobar_medidas(bar_info_8_x, bar_info_8_y, bar_info_8_dx, bar_info_8_dy);
+	comprobar_medidas(bar_info_9_x, bar_info_9_y, bar_info_9_dx, bar_info_9_dy);
+	comprobar_medidas(bar_info_10_x, bar_info_10_y, bar_info_10_dx, bar_info_10_dy);
 
 	int_enable_font_lay(int_font_list, fontsize_X, fontsize_Y, font_path, video_orientation);
 	usar_fuente(int_font_list);
@@ -3168,7 +3581,19 @@ static int run_menu_layout(config_state& rs, bool flipxy, menu_array& gc, sort_i
 		int_enable_font_info(int_font_info_4, bar_info_4_font_dx, bar_info_4_dy, bar_info_4_font_path, video_orientation);
 	if(bar_info_5_dy)
 		int_enable_font_info(int_font_info_5, bar_info_5_font_dx, bar_info_5_dy, bar_info_5_font_path, video_orientation);
-
+	if(bar_info_6_dy)
+		int_enable_font_info(int_font_info_6, bar_info_6_font_dx, bar_info_6_dy, bar_info_6_font_path, video_orientation);
+	if(bar_info_7_dy)
+       	int_enable_font_info(int_font_info_7, bar_info_7_font_dx, bar_info_7_dy, bar_info_7_font_path, video_orientation);
+	if(bar_info_8_dy)
+     	int_enable_font_info(int_font_info_8, bar_info_8_font_dx, bar_info_8_dy, bar_info_8_font_path, video_orientation);
+	if(bar_info_9_dy)
+    	int_enable_font_info(int_font_info_9, bar_info_9_font_dx, bar_info_9_dy, bar_info_9_font_path, video_orientation);
+	if(bar_info_10_dy)
+    	int_enable_font_info(int_font_info_10, bar_info_10_font_dx, bar_info_10_dy, bar_info_10_font_path, video_orientation);
+	
+	//================>>>
+	//INICIA CAPTURA DE POSI√á√ïES
 	scr_x = 0;
 	scr_y = 0;
 	scr_dx = video_size_x();
@@ -3332,6 +3757,12 @@ static int run_menu_layout(config_state& rs, bool flipxy, menu_array& gc, sort_i
 		rs.current_clone = 0;
 	}
 
+	//FINALIZA CAPTURA DE POSI√á√ïES
+	
+	//INICIA LEITURA DE BACKGROUND
+
+	
+	
 	// -------------------------------------------------------------------------
 	
 	// count the real games
@@ -3353,6 +3784,7 @@ static int run_menu_layout(config_state& rs, bool flipxy, menu_array& gc, sort_i
 	log_std(("menu: user end\n"));
 
 	while (!done) {
+
 		const game* effective_game = pos_base + pos_rel < gc.size() && gc[pos_base + pos_rel]->has_game() ? &gc[pos_base + pos_rel]->game_get() : 0;
 
 		resource sound;
@@ -3361,11 +3793,12 @@ static int run_menu_layout(config_state& rs, bool flipxy, menu_array& gc, sort_i
 		}
 
 		if (name_dy){
-			draw_list_window(rs.gar, gc, int_map, coln, rown, pos_base, pos_base+pos_rel, use_ident, rs.merge, list_align);
+			draw_list_window(rs.gar, gc, int_map, coln, rown, pos_base, pos_base+pos_rel, use_ident, list_align);
 		}
 
 		game_selected = pos_base + pos_rel + 1;
 
+		
 		if (bar_info_1_dy)
 			draw_bar_info(int_font_info_1, rs.current_game, bar_info_1_text, game_selected, game_count, rs.include_favorites_get(), bar_info_1_x, bar_info_1_y, bar_info_1_dx, bar_info_1_dy, LCOLOR_BAR_INFO_A, bar_info_1_align);
 		if (bar_info_2_dy)
@@ -3376,7 +3809,18 @@ static int run_menu_layout(config_state& rs, bool flipxy, menu_array& gc, sort_i
 			draw_bar_info(int_font_info_4, rs.current_game, bar_info_4_text, game_selected, game_count, rs.include_favorites_get(), bar_info_4_x, bar_info_4_y, bar_info_4_dx, bar_info_4_dy, LCOLOR_BAR_INFO_D, bar_info_4_align);
 		if (bar_info_5_dy)
 			draw_bar_info(int_font_info_5, rs.current_game, bar_info_5_text, game_selected, game_count, rs.include_favorites_get(), bar_info_5_x, bar_info_5_y, bar_info_5_dx, bar_info_5_dy, LCOLOR_BAR_INFO_E, bar_info_5_align);
-
+		if (bar_info_6_dy)
+			draw_bar_info(int_font_info_6, rs.current_game, bar_info_6_text, game_selected, game_count, rs.include_favorites_get(), bar_info_6_x, bar_info_6_y, bar_info_6_dx, bar_info_6_dy, LCOLOR_BAR_INFO_F, bar_info_6_align);
+		if (bar_info_7_dy)
+			draw_bar_info(int_font_info_7, rs.current_game, bar_info_7_text, game_selected, game_count, rs.include_favorites_get(), bar_info_7_x, bar_info_7_y, bar_info_7_dx, bar_info_7_dy, LCOLOR_BAR_INFO_G, bar_info_7_align);
+		if (bar_info_8_dy)
+			draw_bar_info(int_font_info_8, rs.current_game, bar_info_8_text, game_selected, game_count, rs.include_favorites_get(), bar_info_8_x, bar_info_8_y, bar_info_8_dx, bar_info_8_dy, LCOLOR_BAR_INFO_H, bar_info_8_align);
+		if (bar_info_9_dy)
+			draw_bar_info(int_font_info_9, rs.current_game, bar_info_9_text, game_selected, game_count, rs.include_favorites_get(), bar_info_9_x, bar_info_9_y, bar_info_9_dx, bar_info_9_dy, LCOLOR_BAR_INFO_I, bar_info_9_align);
+		if (bar_info_10_dy)
+			draw_bar_info(int_font_info_10, rs.current_game, bar_info_10_text, game_selected, game_count, rs.include_favorites_get(), bar_info_10_x, bar_info_10_y, bar_info_10_dx, bar_info_10_dy, LCOLOR_BAR_INFO_J, bar_info_10_align);
+		
+		
 		if (ui_grid_dx) {
 			if (frenado)
 				draw_menu_right(ui_grid_x, ui_grid_y, ui_grid_dx, ui_grid_dy, pos_base + rel, pos_rel_max, pos_base_upper + 2 * (pos_rel_max -1));
@@ -3388,6 +3832,8 @@ static int run_menu_layout(config_state& rs, bool flipxy, menu_array& gc, sort_i
 			if (backdrop_win[i].dy != 0)
 				backdrop_game_set(effective_game, i, backdrop_win[i].preview, true, false, true, rs);
 		}
+		
+		
 		
 		//muestra mensajes
 		if (over_msg.length()) {
@@ -3410,35 +3856,67 @@ static int run_menu_layout(config_state& rs, bool flipxy, menu_array& gc, sort_i
 
 			if(menu_font_path != "none") usar_fuente(int_font_list);
 		}
-
+		
 		int_update(rs.mode_get() != mode_full_mixed && rs.mode_get() != mode_list_mixed);
 
 		log_std(("menu: wait begin\n"));
 
 		int_idle_0_enable(rs.current_game && rs.current_game->emulator_get()->is_runnable());
 		int_idle_1_enable(true);
-
-		run_background_wait(rs, sound, silent, pos_rel, backdrop_mac);
-
+		
+		
+		if (LoopCheck && EmuladorSalvo ==  *rs.include_emu_get().begin())
+			run_background_wait(rs, sound, silent, pos_rel, backdrop_mac);
+		
 		// replay the sound and clip
 		silent = false;
 
 		log_std(("menu: wait end\n"));
+		
+		if (LoopCheck && EmuladorSalvo ==  *rs.include_emu_get().begin())
+			key = int_event_get(false);
+		
 
-		key = int_event_get(false);
-
+		if (key == EVENT_SPACE)
+			key = int_event_get(false);
+	
+		
 		log_std(("menu: key %d\n", key));
 
 		string oldfast = rs.fast;
 		rs.fast.erase();
-
+		
+		
+		
 		if (!frenado)
 			key = menu_key(key, pos_base, pos_rel, pos_rel_max, pos_base_upper, coln, gc.size());
 		else
 			key = menu_key_custom(key, pos_base, pos_rel, pos_rel_max, pos_base_upper, coln, gc.size());
 		
+		
+		
+		PosicaoDaBarra = pos_rel;
+		//Atualiza a barra caso Troque de emulador
+		if (EmuladorSalvo !=  *rs.include_emu_get().begin()){
+			EmuladorSalvo = *rs.include_emu_get().begin();
+			key = EVENT_NONE;
+		}
+		
+		//Atualiza a barra caso na primeira volta do loop s√≥ para atualizar posi√ß√£o da barra
+		if (!LoopCheck){
+			LoopCheck = true;
+			key = EVENT_NONE;
+		}
+		
+		/*
+				stringstream ss;
+				ss << LoopCheck;
+				str = ss.str();
+				MessageBox(NULL,str.c_str(),"2",MB_OK|MB_SYSTEMMODAL);
+		*/
+		
 		is_loaded = true;
-
+		
 		switch (key) {
 			case EVENT_INS :
 				if (pos_base + pos_rel < gc.size() && pos_base + pos_rel > 0) {
@@ -3464,6 +3942,10 @@ static int run_menu_layout(config_state& rs, bool flipxy, menu_array& gc, sort_i
 						pos_base = new_pos - pos_rel;
 				}
 				break;
+			case EVENT_NONE :
+				if (!CheckFile)
+					done = true;
+				
 			default:
 				if (key>32 && key<128 && isalnum(key)) {
 					oldfast.insert(oldfast.length(), 1, (char)key);
@@ -3493,70 +3975,83 @@ static int run_menu_layout(config_state& rs, bool flipxy, menu_array& gc, sort_i
 					}
 				}
 				break;
+			case EVENT_ESCEMULE :
 			case EVENT_ENTER :
 			case EVENT_SETCOIN :
-			case EVENT_ESCEMULE :
 			case EVENT_CLONE :
-				if(menu_font_path != "none") usar_fuente(int_font_menu);
-			case EVENT_LOCK :
 			case EVENT_IDLE_0 :
 			case EVENT_IDLE_1 :
+			case EVENT_IDLE_EXIT :
+			case EVENT_HELP :
+			case EVENT_MINFO :
+				if (menu_font_path != "none")
+					usar_fuente(int_font_menu);
+			case EVENT_LOCK :
+			case EVENT_FAVORITES_NEXT :
 				done = true;
 				break;
+			// Eventos bloqueados por estar en modo custom (layout)
+			case EVENT_ROTATE :
+			case EVENT_PREVIEW :
+				break;
+			// Eventos bloqueados si el Menu de Sistemas esta activado
+			case EVENT_EMU_PRE :
+			case EVENT_EMU_NEXT :
+				if (!rs.menu_systems_activated) {
+					is_loaded = false;
+					done = true;
+				}
+				break;
+			// Eventos permitidos si el Menu de Sistemas esta activado y no cargado
+			case EVENT_ESC :
+			case EVENT_OFF :
+				if (rs.menu_systems_activated && !rs.menu_systems->state_get()) {
+					done = true;
+				}
+				break;
+			
 		}
 		
+				
+		// Eventos bloqueados por LOCKED
 		if (!rs.lock_effective) {
-			// eventos desactivados si MenuSystems listado
-			if (!rs.menu_systems->state_get()) {
-				// eventos desactivados si MenuSystems activado
-				if (!rs.menu_systems_activated) {
-					switch (key) {
-						case EVENT_EMU_NEXT :
-						case EVENT_EMU_PRE :
-							is_loaded = false;
-							done = true;
-							break;
-					}
-				}
-				switch (key) {
-					case EVENT_SETFAVORITES :
-					case EVENT_SETTYPE :
-						if(!rs.current_game) break;
-						if(menu_font_path != "none") usar_fuente(int_font_menu);
-					case EVENT_TYPE :
-						done = true;
-						break;
-				}
-			}
 			switch (key) {
-				case EVENT_ROTATE :
-					break;
-				case EVENT_HELP :			//F1
-				case EVENT_ATTRIB :		//F4
-				case EVENT_SORT :			//F5
-				case EVENT_COMMAND :	//F12
-				case EVENT_SETCOIN :
-				case EVENT_ESCEMULE :
-				case EVENT_MENU :
-					if(menu_font_path != "none") usar_fuente(int_font_menu);
-				case EVENT_FAVORITES_NEXT :	//F2
-				case EVENT_MODE :
-				case EVENT_PREVIEW :
-					done = true;
-					break;
 				case EVENT_ESC :
-					if (rs.exit_mode == exit_normal || rs.exit_mode == exit_all || rs.console_mode) {
-						if(menu_font_path != "none") usar_fuente(int_font_menu);
+					if (!done && ((rs.exit_mode == exit_normal || rs.exit_mode == exit_all || rs.console_mode)
+					              || (rs.security_exit && rs.exit_mode == exit_shutdown))) {
+						if (menu_font_path != "none")
+							usar_fuente(int_font_menu);
 						done = true;
 					}
 					break;
 				case EVENT_OFF :
-					if (rs.exit_mode == exit_shutdown || rs.exit_mode == exit_all) {
-						if(menu_font_path != "none") usar_fuente(int_font_menu);
+					if (!done && (rs.exit_mode == exit_shutdown || rs.exit_mode == exit_all)) {
+						if (menu_font_path != "none")
+							usar_fuente(int_font_menu);
 						done = true;
 					}
 					break;
+				case EVENT_SETFAVORITES :
+				case EVENT_SETTYPE :
+					if (!rs.current_game)
+						break;
+				case EVENT_TYPE :
+					if (rs.menu_systems->state_get())
+						break;
+				case EVENT_ATTRIB :
+				case EVENT_SORT :
+				case EVENT_COMMAND :
+				case EVENT_SETCOIN :
+				case EVENT_ESCEMULE :
+				case EVENT_MENU :
+					if (menu_font_path != "none")
+						usar_fuente(int_font_menu);
+				case EVENT_MODE :
+					done = true;
+					break;
+				
 			}
+			
 		}
 
 		if (pos_rel + pos_base < gc.size() && gc[pos_rel + pos_base]->has_game()) {
@@ -3566,6 +4061,8 @@ static int run_menu_layout(config_state& rs, bool flipxy, menu_array& gc, sort_i
 			rs.current_game = 0;
 			rs.current_clone = 0;
 		}
+
+		
 	}
 
 	if (key == EVENT_IDLE_0) {
@@ -3583,9 +4080,13 @@ static int run_menu_layout(config_state& rs, bool flipxy, menu_array& gc, sort_i
 	rs.menu_base_effective = pos_base;
 	rs.menu_rel_effective = pos_rel;
 
+	
+
 	// guarda la lista y el emu actual
 	rs.list_pre = rs.include_favorites_get();
 	rs.emu_pre = *rs.include_emu_get().begin();
+	
+	
 	
 	delete [] int_map;
 	delete [] backdrop_map;
@@ -3746,11 +4247,16 @@ int run_menu_sort(config_state& rs, const pgame_sort_set& gss, sort_item_func* c
 				gc.insert(gc.end(), new menu_entry(category));
 			}
 			unsigned ident = 1;
-			if ((*i)->parent_get()) {
-				if ((*i)->software_get())
-					ident += 2;
-				else
-					ident += 1;
+			if ((*i)->emulator_get()->type_get() == "mess_mess") {
+				if ((*i)->software_get() && (*i)->parent_get()->software_get())
+						ident += 1;
+			} else {
+				if ((*i)->parent_get()) {
+					if ((*i)->software_get())
+						ident += 2;
+					else
+						ident += 1;
+				}
 			}
 			gc.insert(gc.end(), new menu_entry(*i, ident * int_font_dx_get()));
 		}
@@ -3758,11 +4264,16 @@ int run_menu_sort(config_state& rs, const pgame_sort_set& gss, sort_item_func* c
 		gc.reserve(gss.size());
 		for(pgame_sort_set::const_iterator i = gss.begin();i!=gss.end();++i) {
 			unsigned ident = 0;
-			if ((*i)->parent_get()) {
-				if ((*i)->software_get())
-					ident += 2;
-				else
-					ident += 1;
+			if ((*i)->emulator_get()->type_get() == "mess_mess") {
+				if ((*i)->software_get() && (*i)->parent_get()->software_get())
+						ident += 1;
+			} else {
+				if ((*i)->parent_get()) {
+					if ((*i)->software_get())
+						ident += 2;
+					else
+						ident += 1;
+				}
 			}
 			gc.insert(gc.end(), new menu_entry(*i, ident * int_font_dx_get()));
 		}
@@ -3788,17 +4299,10 @@ int run_menu_sort(config_state& rs, const pgame_sort_set& gss, sort_item_func* c
 	bool done = false;
 	int key = 0;
 	bool idle = false;
+	bool idle_exit = false;
 
 	while (!done) {
 		if (idle) {
-			if (rs.idle_saver_type == saver_shutdown) {
-				key = EVENT_OFF_FORCE;
-				break;
-			}
-			if (rs.idle_saver_type == saver_exit) {
-				key = EVENT_ESC_FORCE;
-				break;
-			}
 			if (rs.restore == restore_idle)
 				rs.restore_load();
 			if (rs.idle_saver_type == saver_off)
@@ -3807,12 +4311,25 @@ int run_menu_sort(config_state& rs, const pgame_sort_set& gss, sort_item_func* c
 				key = run_menu_idle(rs, gc);
 				if (key == EVENT_ENTER)
 					done = true;
+				if (key == EVENT_IDLE_EXIT)
+					idle_exit = true;
 				if (key == EVENT_SETCOIN)
 					done = true;
 			}
 			idle = false;
 		}
 
+		if (idle_exit) {
+			if (rs.idle_exit_type == idle_exit_shutdown) {
+				key = EVENT_OFF_FORCE;
+				break;
+			}
+			if (rs.idle_exit_type == idle_exit_normal) {
+				key = EVENT_ESC_FORCE;
+				break;
+			}
+		}
+		
 		if (!done) {
 			if (rs.mode_get() == mode_custom)
 				key = run_menu_layout(rs, flipxy, gc, category_func, silent, over_msg);
@@ -3825,6 +4342,9 @@ int run_menu_sort(config_state& rs, const pgame_sort_set& gss, sort_item_func* c
 			switch (key) {
 			case EVENT_IDLE_1 :
 				idle = true;
+				break;
+			case EVENT_IDLE_EXIT :
+				idle_exit = true;
 				break;
 			default:
 				done = true;
@@ -4135,7 +4655,6 @@ int run_menu(config_state& rs, bool flipxy, bool silent)
 		switch (key) {
 		case EVENT_MODE :
 			if (rs.mode_mask) {
-				silent = false;
 				do {
 					switch (rs.mode_get()) {
 					case mode_full : rs.mode_set(mode_full_mixed); break;
@@ -4181,7 +4700,10 @@ int run_menu(config_state& rs, bool flipxy, bool silent)
 		}
 		
 		switch (key) {
+		case EVENT_NONE :
 		case EVENT_ESC :
+		case EVENT_SETCOIN :
+		case EVENT_ESCEMULE:
 		case EVENT_OFF :
 		case EVENT_ESC_FORCE :
 		case EVENT_OFF_FORCE :
@@ -4191,12 +4713,11 @@ int run_menu(config_state& rs, bool flipxy, bool silent)
 		case EVENT_IDLE_1 :
 		case EVENT_LOCK :
 		case EVENT_HELP :
+		case EVENT_MINFO :
 		case EVENT_FAVORITES_NEXT :
 		case EVENT_SORT :
 		case EVENT_SETFAVORITES :
 		case EVENT_SETTYPE :
-		case EVENT_SETCOIN : //warlock Set coin
-		case EVENT_ESCEMULE:
 		case EVENT_COMMAND :
 		case EVENT_MENU :
 		case EVENT_EMU_NEXT :

@@ -9,7 +9,7 @@
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of 
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details. 
  *
@@ -23,8 +23,7 @@
 #include "text.h"
 #include "common.h"
 #include "play.h"
-#include <windows.h> //warlock
-#include <mmsystem.h>
+
 #include "advance.h"
 
 #include <list>
@@ -36,9 +35,7 @@
 #include <cmath>
 
 using namespace std;
-static char flag_ficha = 0;  //warlock
-static char flag_enter = 0;
-extern int bloqueado;
+
 // -------------------------------------------------------------------------
 // Orientation/Size
 
@@ -381,7 +378,8 @@ static void int_mouse_move_raw_poll()
 
 #define DEFAULT_GRAPH_MODE "default_graph" // default video mode
 
-static unsigned int_mode_size; // requested mode size
+static unsigned int_mode_size_x; // requested mode size
+static unsigned int_mode_size_y; // requested mode size
 static adv_mode int_current_mode; // selected video mode
 static adv_monitor int_monitor; // monitor info
 static adv_generate_interpolate_set int_interpolate;
@@ -395,8 +393,8 @@ bool int_mode_graphics_less(const adv_mode* A, const adv_mode* B)
 	int areaA = A->size_x * A->size_y;
 	int areaB = B->size_x * B->size_y;
 
-	int difA = abs(areaA - static_cast<int>(int_mode_size*int_mode_size*3/4));
-	int difB = abs(areaB - static_cast<int>(int_mode_size*int_mode_size*3/4));
+	int difA = abs(areaA - static_cast<int>(int_mode_size_x*int_mode_size_y));
+	int difB = abs(areaB - static_cast<int>(int_mode_size_x*int_mode_size_y));
 
 	return difA < difB;
 }
@@ -423,7 +421,7 @@ static bool int_mode_find(bool& mode_found, unsigned index, adv_crtc_container& 
 				target_err("The selected mode '%s' is out of your video board capabilities.\n", DEFAULT_GRAPH_MODE);
 				return false;
 			}
-  
+
 			mode_found = true;
 			return true;
 		}
@@ -432,7 +430,7 @@ static bool int_mode_find(bool& mode_found, unsigned index, adv_crtc_container& 
 	// generate an exact mode with clock
 	if (int_has_generate) {
 		adv_crtc crtc;
-		err = generate_find_interpolate(&crtc, int_mode_size, int_mode_size*3/4, 70, &int_monitor, &int_interpolate, video_mode_generate_driver_flags(VIDEO_DRIVER_FLAGS_MODE_GRAPH_MASK, 0), GENERATE_ADJUST_EXACT | GENERATE_ADJUST_VCLOCK);
+		err = generate_find_interpolate(&crtc, int_mode_size_x, int_mode_size_y, 70, &int_monitor, &int_interpolate, video_mode_generate_driver_flags(VIDEO_DRIVER_FLAGS_MODE_GRAPH_MASK, 0), GENERATE_ADJUST_EXACT | GENERATE_ADJUST_VCLOCK);
 		if (err == 0) {
 			if (crtc_clock_check(&int_monitor, &crtc)) {
 				adv_mode mode;
@@ -450,7 +448,7 @@ static bool int_mode_find(bool& mode_found, unsigned index, adv_crtc_container& 
 	// generate any resolution for a window manager
 	if ((video_mode_generate_driver_flags(VIDEO_DRIVER_FLAGS_MODE_GRAPH_MASK, VIDEO_DRIVER_FLAGS_OUTPUT_WINDOW))!=0) {
 		adv_crtc crtc;
-		crtc_fake_set(&crtc, int_mode_size, int_mode_size*3/4);
+		crtc_fake_set(&crtc, int_mode_size_x, int_mode_size_y);
 
 		adv_mode mode;
 		mode_reset(&mode);
@@ -498,7 +496,9 @@ static unsigned int_idle_0; ///< Seconds before the first 0 event.
 static unsigned int_idle_0_rep; ///< Seconds before the second 0 event.
 static unsigned int_idle_1; ///< Seconds before the first 1 event.
 static unsigned int_idle_1_rep; ///< Seconds before the second 1 event.
+static unsigned int_idle_exit_time; ///< Seconds before the idle_exit event.
 static time_t int_idle_time_current; ///< Last time check in idle.
+static time_t int_idle_time_exit; ///< Last time check in idle to exit.
 static bool int_idle_0_state; ///< Idle event 0 enabler.
 static bool int_idle_1_state; ///< Idle event 1 enabler.
 static int int_last; ///< Last event.
@@ -591,13 +591,14 @@ void int_unreg(void)
 	int_key_unreg();
 }
 
-bool int_init(unsigned size)
+bool int_init(unsigned size_x, unsigned size_y)
 {
 	unsigned index;
 	bool mode_found = false;
 	bool crtc_default = false;
 
-	int_mode_size = size;
+	int_mode_size_x = size_x;
+	int_mode_size_y = size_y;
 	mode_reset(&int_current_mode);
 
 	if (adv_video_init() != 0) {
@@ -683,13 +684,14 @@ void int_done()
 	adv_video_done();
 }
 
-bool int_set(double gamma, double brightness, unsigned idle_0, unsigned idle_0_rep, unsigned idle_1, unsigned idle_1_rep, bool backdrop_fast, unsigned translucency, bool disable_special)
+bool int_set(double gamma, double brightness, unsigned idle_0, unsigned idle_0_rep, unsigned idle_1, unsigned idle_1_rep, unsigned idle_exit_time, bool backdrop_fast, unsigned translucency, bool disable_special)
 {
-	int_idle_time_current = time(0);
+	int_idle_time_current = int_idle_time_exit = time(0);
 	int_idle_0 = idle_0;
 	int_idle_1 = idle_1;
 	int_idle_0_rep = idle_0_rep;
 	int_idle_1_rep = idle_1_rep;
+	int_idle_exit_time = idle_exit_time;
 	int_idle_0_state = true;
 	int_idle_1_state = true;
 	int_wait_for_backdrop = !backdrop_fast;
@@ -2893,7 +2895,7 @@ static void key_poll()
 
 void int_idle_time_reset()
 {
-	int_idle_time_current = time(0);
+	int_idle_time_current = int_idle_time_exit = time(0);
 	int_last = EVENT_NONE;
 }
 
@@ -2911,7 +2913,11 @@ static void int_idle()
 {
 	time_t now = time(0);
 	time_t elapsed = now - int_idle_time_current;
+	time_t elapsed_exit = now - int_idle_time_exit;
 
+	if (int_idle_exit_time != 0 && elapsed_exit > int_idle_exit_time)
+		event_push_repeat(EVENT_IDLE_EXIT);
+	
 	if (int_idle_0_state) {
 		if (int_idle_0_rep != 0
 			&& int_last == EVENT_IDLE_0
@@ -3027,7 +3033,11 @@ unsigned int_event_get(bool update_background)
 	}
 #endif
 
-	return int_last = event_pop();
+	int_last = event_pop();
+	if (int_last != EVENT_IDLE_1)
+		int_idle_time_exit = int_idle_time_current;
+
+	return int_last;
 }
 
 unsigned int_event_clear()
@@ -3036,5 +3046,3 @@ unsigned int_event_clear()
 	
 	return 0;
 }
-
-

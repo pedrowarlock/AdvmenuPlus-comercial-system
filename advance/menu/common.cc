@@ -536,33 +536,37 @@ string file_read(const string& file)
 	return ss;
 }
 
-bool file_write(const string& path, const string& text)
+bool file_write(const string& file, const string& text)
 {
-	string dir = file_dir(path);
-	
-	if (access(dir.c_str(), F_OK)!=0) {
+	string dir = cpath_export(slash_remove(file_dir(file)));
+
+	if (!dir.empty() && access(dir.c_str(), F_OK)!=0) {
 		if (target_mkdir(dir.c_str()) != 0) {
 			target_err("Error creating dir %s\n", dir.c_str());
 			return false;
 		}
 	}
-	
+
+	string path = cpath_export(file);
+
 	FILE* f = fopen(path.c_str(), "wb");
 	if (!f) {
 		target_err("Error opening the file '%s'.\n", path.c_str());
 		return false;
 	}
- 
+
 	// conversion: (const string) to (char*)
 	char* sc = strcpy((char*)malloc(text.length()+1), text.c_str());
 
 	if (fwrite(sc, text.length(), 1, f)!=1) {
+		free(sc);
 		fclose(f);
 		target_err("Error writting the file '%s'.\n", path.c_str());
 		return false;
 	}
- 
+
 	fclose(f);
+	free(sc);
 
 	return true;
 }
@@ -570,17 +574,17 @@ bool file_write(const string& path, const string& text)
 string file_dir_custom(const string& s)
 {
 	string path = s;
-
+	
 	for(unsigned i=0;path[i];++i)
 		if (path[i] == '\\')
-			path[i] = '/';
-
+		path[i] = '/';
+	
 	int i = path.find_last_of("/");
 	if (i == string::npos)
 		return ".";
 	else
 		return string(s, 0, i);
-}
+} 
 
 string emu_tolower(const string& a)
 {

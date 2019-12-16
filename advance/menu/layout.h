@@ -49,6 +49,7 @@ protected:
 	std::string custom_win_snaps;
 	std::string custom_win_flyers;
 	std::string custom_win_cabinets;
+	std::string custom_bolinha;
 	std::string custom_win_icons;
 	std::string custom_win_marquees;
 	std::string custom_win_titles;
@@ -75,10 +76,35 @@ protected:
 	std::string custom_bar_info_4_align;
 	std::string custom_bar_info_5;
 	std::string custom_bar_info_5_text;
-	std::string custom_bar_info_5_color; 
-	std::string custom_bar_info_5_colorx; //warlock
+	std::string custom_bar_info_5_color;
 	std::string custom_bar_info_5_font;
 	std::string custom_bar_info_5_align;
+	std::string custom_bar_info_6;
+	std::string custom_bar_info_6_text;
+	std::string custom_bar_info_6_color;
+	std::string custom_bar_info_6_font;
+	std::string custom_bar_info_6_align;
+	std::string custom_bar_info_7;
+	std::string custom_bar_info_7_text;
+	std::string custom_bar_info_7_color;
+	std::string custom_bar_info_7_font;
+	std::string custom_bar_info_7_align;
+	std::string custom_bar_info_8;
+	std::string custom_bar_info_8_text;
+	std::string custom_bar_info_8_color;
+	std::string custom_bar_info_8_font;
+	std::string custom_bar_info_8_align;
+	std::string custom_bar_info_9;
+	std::string custom_bar_info_9_text;
+	std::string custom_bar_info_9_color;
+	std::string custom_bar_info_9_font;
+	std::string custom_bar_info_9_align;
+	std::string custom_bar_info_10;
+	std::string custom_bar_info_10_text;
+	std::string custom_bar_info_10_color;
+	std::string custom_bar_info_10_font;
+	std::string custom_bar_info_10_align;
+	std::string custom_bar_info_10_colorx; //warlock
 	std::string custom_background_color;
 	std::string custom_menu_font_path;
 	std::string custom_menu_font_size;
@@ -128,6 +154,10 @@ public:
 	void custom_win_flyers_set(const std::string& A) { custom_win_flyers = A; }
 	const std::string& custom_win_flyers_get() const { return custom_win_flyers; }
 	void custom_win_cabinets_set(const std::string& A) { custom_win_cabinets = A; }
+	
+	const std::string& custom_bolinha_get() const { return custom_bolinha; }
+	void custom_bolinha_set(const std::string& A) { custom_bolinha = A; }
+
 	const std::string& custom_win_cabinets_get() const { return custom_win_cabinets; }
 	void custom_win_icons_set(const std::string& A) { custom_win_icons = A; }
 	const std::string& custom_win_icons_get() const { return custom_win_icons; }
@@ -181,17 +211,64 @@ public:
 	const std::string& custom_bar_info_5_get() const { return custom_bar_info_5; }
 	void custom_bar_info_5_text_set(const std::string& A) { custom_bar_info_5_text = A; }
 	const std::string& custom_bar_info_5_text_get() const { return custom_bar_info_5_text; }
-	
 	void custom_bar_info_5_color_set(const std::string& A) { custom_bar_info_5_color = A; }
 	const std::string& custom_bar_info_5_color_get() const { return custom_bar_info_5_color; }
-	
-	void custom_bar_info_5_colorx_set(const std::string& A) { custom_bar_info_5_colorx = A; } //warlock
-	const std::string& custom_bar_info_5_colorx_get() const { return custom_bar_info_5_colorx; }
-	
 	void custom_bar_info_5_font_set(const std::string& A);// { custom_bar_info_5_font = A; }
 	const std::string& custom_bar_info_5_font_get() const { return custom_bar_info_5_font; }
 	void custom_bar_info_5_align_set(const std::string& A) { custom_bar_info_5_align = A; }
 	const std::string& custom_bar_info_5_align_get() const { return custom_bar_info_5_align; }
+	void custom_bar_info_6_set(const std::string& A) { custom_bar_info_6 = A; }
+	const std::string& custom_bar_info_6_get() const { return custom_bar_info_6; }
+	void custom_bar_info_6_text_set(const std::string& A) { custom_bar_info_6_text = A; }
+	const std::string& custom_bar_info_6_text_get() const { return custom_bar_info_6_text; }
+	void custom_bar_info_6_color_set(const std::string& A) { custom_bar_info_6_color = A; }
+	const std::string& custom_bar_info_6_color_get() const { return custom_bar_info_6_color; }
+	void custom_bar_info_6_font_set(const std::string& A);// { custom_bar_info_6_font = A; }
+	const std::string& custom_bar_info_6_font_get() const { return custom_bar_info_6_font; }
+	void custom_bar_info_6_align_set(const std::string& A) { custom_bar_info_6_align = A; }
+	const std::string& custom_bar_info_6_align_get() const { return custom_bar_info_6_align; }
+	void custom_bar_info_7_set(const std::string& A) { custom_bar_info_7 = A; }
+	const std::string& custom_bar_info_7_get() const { return custom_bar_info_7; }
+	void custom_bar_info_7_text_set(const std::string& A) { custom_bar_info_7_text = A; }
+	const std::string& custom_bar_info_7_text_get() const { return custom_bar_info_7_text; }
+	void custom_bar_info_7_color_set(const std::string& A) { custom_bar_info_7_color = A; }
+	const std::string& custom_bar_info_7_color_get() const { return custom_bar_info_7_color; }
+	void custom_bar_info_7_font_set(const std::string& A);// { custom_bar_info_7_font = A; }
+	const std::string& custom_bar_info_7_font_get() const { return custom_bar_info_7_font; }
+	void custom_bar_info_7_align_set(const std::string& A) { custom_bar_info_7_align = A; }
+	const std::string& custom_bar_info_7_align_get() const { return custom_bar_info_7_align; }
+	void custom_bar_info_8_set(const std::string& A) { custom_bar_info_8 = A; }
+	const std::string& custom_bar_info_8_get() const { return custom_bar_info_8; }
+	void custom_bar_info_8_text_set(const std::string& A) { custom_bar_info_8_text = A; }
+	const std::string& custom_bar_info_8_text_get() const { return custom_bar_info_8_text; }
+	void custom_bar_info_8_color_set(const std::string& A) { custom_bar_info_8_color = A; }
+	const std::string& custom_bar_info_8_color_get() const { return custom_bar_info_8_color; }
+	void custom_bar_info_8_font_set(const std::string& A);// { custom_bar_info_8_font = A; }
+	const std::string& custom_bar_info_8_font_get() const { return custom_bar_info_8_font; }
+	void custom_bar_info_8_align_set(const std::string& A) { custom_bar_info_8_align = A; }
+	const std::string& custom_bar_info_8_align_get() const { return custom_bar_info_8_align; }
+	void custom_bar_info_9_set(const std::string& A) { custom_bar_info_9 = A; }
+	const std::string& custom_bar_info_9_get() const { return custom_bar_info_9; }
+	void custom_bar_info_9_text_set(const std::string& A) { custom_bar_info_9_text = A; }
+	const std::string& custom_bar_info_9_text_get() const { return custom_bar_info_9_text; }
+	void custom_bar_info_9_color_set(const std::string& A) { custom_bar_info_9_color = A; }
+	const std::string& custom_bar_info_9_color_get() const { return custom_bar_info_9_color; }
+	void custom_bar_info_9_font_set(const std::string& A);// { custom_bar_info_9_font = A; }
+	const std::string& custom_bar_info_9_font_get() const { return custom_bar_info_9_font; }
+	void custom_bar_info_9_align_set(const std::string& A) { custom_bar_info_9_align = A; }
+	const std::string& custom_bar_info_9_align_get() const { return custom_bar_info_9_align; }
+	void custom_bar_info_10_set(const std::string& A) { custom_bar_info_10 = A; }
+	const std::string& custom_bar_info_10_get() const { return custom_bar_info_10; }
+	void custom_bar_info_10_text_set(const std::string& A) { custom_bar_info_10_text = A; }
+	const std::string& custom_bar_info_10_text_get() const { return custom_bar_info_10_text; }
+	void custom_bar_info_10_color_set(const std::string& A) { custom_bar_info_10_color = A; }
+	const std::string& custom_bar_info_10_color_get() const { return custom_bar_info_10_color; }
+	void custom_bar_info_10_font_set(const std::string& A);// { custom_bar_info_10_font = A; }
+	const std::string& custom_bar_info_10_font_get() const { return custom_bar_info_10_font; }
+	void custom_bar_info_10_align_set(const std::string& A) { custom_bar_info_10_align = A; }
+	const std::string& custom_bar_info_10_align_get() const { return custom_bar_info_10_align; }
+	void custom_bar_info_10_colorx_set(const std::string& A) { custom_bar_info_10_colorx = A; } //warlock
+	const std::string& custom_bar_info_10_colorx_get() const { return custom_bar_info_10_colorx; }
 	void custom_background_color_set(const std::string& A) { custom_background_color = A; }
 	const std::string& custom_background_color_get() const { return custom_background_color; }
 	void custom_menu_font_path_set(const std::string& A);// { custom_menu_font_path = A; }
@@ -233,6 +310,7 @@ static struct layout_option {
 	{ "list_font_size", "", &layout::custom_font_size_set },
 	{ "win_snaps", "none", &layout::custom_win_snaps_set },
 	{ "win_flyers", "none", &layout::custom_win_flyers_set },
+	{ "bolinha", "none", &layout::custom_bolinha_set },
 	{ "win_cabinets", "none", &layout::custom_win_cabinets_set },
 	{ "win_icons", "none", &layout::custom_win_icons_set },
 	{ "win_marquees", "none", &layout::custom_win_marquees_set },
@@ -258,12 +336,37 @@ static struct layout_option {
 	{ "bar_info_4_color", "", &layout::custom_bar_info_4_color_set },
 	{ "bar_info_4_font", "auto", &layout::custom_bar_info_4_font_set },
 	{ "bar_info_4_align", "left", &layout::custom_bar_info_4_align_set },
-	{ "bar_info_Coin", "none", &layout::custom_bar_info_5_set },
-	{ "bar_info_Coin_text", "", &layout::custom_bar_info_5_text_set },
-	{ "bar_info_Coin_color", "", &layout::custom_bar_info_5_color_set },
-	{ "bar_info_Coin_NoCoin", "",&layout::custom_bar_info_5_colorx_set }, //warlock
-	{ "bar_info_Coin_font", "auto", &layout::custom_bar_info_5_font_set },
-	{ "bar_info_Coin_align", "left", &layout::custom_bar_info_5_align_set },
+	{ "bar_info_5", "none", &layout::custom_bar_info_5_set },
+	{ "bar_info_5_text", "", &layout::custom_bar_info_5_text_set },
+	{ "bar_info_5_color", "", &layout::custom_bar_info_5_color_set },
+	{ "bar_info_5_font", "auto", &layout::custom_bar_info_5_font_set },
+	{ "bar_info_5_align", "left", &layout::custom_bar_info_5_align_set },
+	{ "bar_info_6", "none", &layout::custom_bar_info_6_set },
+	{ "bar_info_6_text", "", &layout::custom_bar_info_6_text_set },
+	{ "bar_info_6_color", "", &layout::custom_bar_info_6_color_set },
+	{ "bar_info_6_font", "auto", &layout::custom_bar_info_6_font_set },
+	{ "bar_info_6_align", "left", &layout::custom_bar_info_6_align_set },
+	{ "bar_info_7", "none", &layout::custom_bar_info_7_set },
+	{ "bar_info_7_text", "", &layout::custom_bar_info_7_text_set },
+	{ "bar_info_7_color", "", &layout::custom_bar_info_7_color_set },
+	{ "bar_info_7_font", "auto", &layout::custom_bar_info_7_font_set },
+	{ "bar_info_7_align", "left", &layout::custom_bar_info_7_align_set },
+	{ "bar_info_8", "none", &layout::custom_bar_info_8_set },
+	{ "bar_info_8_text", "", &layout::custom_bar_info_8_text_set },
+	{ "bar_info_8_color", "", &layout::custom_bar_info_8_color_set },
+	{ "bar_info_8_font", "auto", &layout::custom_bar_info_8_font_set },
+	{ "bar_info_8_align", "left", &layout::custom_bar_info_8_align_set },
+	{ "bar_info_9", "none", &layout::custom_bar_info_9_set },
+	{ "bar_info_9_text", "", &layout::custom_bar_info_9_text_set },
+	{ "bar_info_9_color", "", &layout::custom_bar_info_9_color_set },
+	{ "bar_info_9_font", "auto", &layout::custom_bar_info_9_font_set },
+	{ "bar_info_9_align", "left", &layout::custom_bar_info_9_align_set },
+	{ "bar_info_Coin", "none", &layout::custom_bar_info_10_set },
+	{ "bar_info_Coin_text", "", &layout::custom_bar_info_10_text_set },
+	{ "bar_info_Coin_color", "", &layout::custom_bar_info_10_color_set },
+	{ "bar_info_Coin_NoCoin_color", "",&layout::custom_bar_info_10_colorx_set }, //warlock
+	{ "bar_info_Coin_font", "auto", &layout::custom_bar_info_10_font_set },
+	{ "bar_info_Coin_align", "left", &layout::custom_bar_info_10_align_set },
 	{ "background_color", "", &layout::custom_background_color_set },
 	{ "menu_font_path", "auto", &layout::custom_menu_font_path_set },
 	{ "menu_font_size", "", &layout::custom_menu_font_size_set },

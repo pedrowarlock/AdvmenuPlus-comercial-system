@@ -84,6 +84,7 @@ game::game(const game& A) :
 	clone_bag(A.clone_bag),
 	parent(A.parent),
 	machinedevice_bag(A.machinedevice_bag),
+	softwarelist_bag(A.softwarelist_bag),
 	snap_path(A.snap_path), clip_path(A.clip_path), flyer_path(A.flyer_path), cabinet_path(A.cabinet_path),
 	sound_path(A.sound_path), icon_path(A.icon_path), marquee_path(A.marquee_path),
 	emu(A.emu)
@@ -188,6 +189,21 @@ string game::name_without_emulator_get() const
 		return name_get().substr(i + 1);
 }
 
+string game::name_hash_get() const
+{
+	string name_game = name_get();
+	
+	int start = name_game.find('/');
+	if (start == string::npos)
+		return "";
+	
+	int end = name_game.find('/', start + 1);
+	if (end == string::npos)
+		return "";
+
+	return string(name_game, start + 1, end - start - 1);
+}
+
 void game::auto_type_set(const category* A) const
 {
 	if (!is_user_type_set())
@@ -221,7 +237,7 @@ const game& game::bios_get() const
 const game& game::root_get() const
 {
 	const game* root = this;
-	while (root->parent_get())
+	while (root->parent_get() && !root->software_get())
 		root = root->parent_get();
 	return *root;
 }
@@ -427,7 +443,7 @@ void game_set::cache(merge_t merge)
 
 	// compute the derived tree_present
 	for(iterator i=begin();i!=end();++i) {
-		bool present = is_tree_rom_of_present(i->name_get(), merge);
+		bool present = is_tree_rom_of_present(i->name_get(), i->emulator_get()->emulator_merge_get(merge));
 		i->flag_set(present, game::flag_tree_present);
 	}
 
@@ -616,6 +632,21 @@ bool game_set::preview_list_set(const string& list, const string& emulator_name,
 	return almost_one;
 }
 
+bool game_set::preview_mess_list_set(const string& list, const string& emulator_name, void (game::*preview_set)(const resource& s) const, const string& ext0, const string& ext1)
+{
+	bool almost_one = false;
+	int i = 0;
+
+	while (i<list.length()) {
+		string dir = token_get(list, i, ":");
+		if (preview_dir_set(dir, emulator_name + "/" + file_file(dir), preview_set, ext0, ext1))
+			almost_one = true;
+		token_skip(list, i, ":");
+	}
+
+	return almost_one;
+}
+
 bool game_set::preview_software_dir_set(const string& dir, const string& emulator_name, void (game::*preview_set)(const resource& s) const, const string& ext0, const string& ext1)
 {
 	bool almost_one = false;
@@ -756,7 +787,7 @@ string sort_item_info(const game& g)
 	if (g.info_get().length())
 		return g.info_get();
 	else
-		return "<undefined>";
+		return "-LISTA COMPLETA-";
 }
 
 string sort_item_timepersession(const game& g)

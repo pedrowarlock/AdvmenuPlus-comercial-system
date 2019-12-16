@@ -75,6 +75,8 @@ struct state_t {
 	unsigned rom_size; /**< Size of the current rom. */
 	bool rom_merge; /**< Merge of the current rom. */
 
+	string sn; // nombre del softwarelist (hash) que se esta leyendo
+	softwarelist* s; // system(name, status, filter), software(sn, sharedfeatname, sharedfeatvalue)
 };
 
 /****************************************************************************/
@@ -102,27 +104,70 @@ static void process_game(struct state_t* state, enum token_t t, const char* s, u
 	}
 }
 
+static void process_softwarelistnameloaded(struct state_t* state, enum token_t t, const char* s, unsigned len, const char** attributes) //
+{
+	if (t == token_data) {
+		state->sn = string(s, len);
+	}
+}
+
+static void process_software(struct state_t* state, enum token_t t, const char* s, unsigned len, const char** attributes) //
+{
+	if (t == token_open) {
+		state->g = new game;
+		state->g->emulator_set(state->e);
+		state->g->software_set(true);
+	} else if (t == token_close) {
+		state->a->insert(*state->g);
+		delete state->g;
+		state->g = 0;
+	}
+}
+
+static void process_softwarename(struct state_t* state, enum token_t t, const char* s, unsigned len, const char** attributes) //
+{
+	if (t == token_data) {
+		if (!state->g) {
+			process_error(state, 0, "invalid state");
+			return;
+		}
+		state->g->name_set(state->e->user_name_get() + "/" + state->sn + "/" + string(s, len));
+	}
+}
+
+static void process_softwarecloneof(struct state_t* state, enum token_t t, const char* s, unsigned len, const char** attributes) //
+{
+	if (t == token_data) {
+		if (!state->g) {
+			process_error(state, 0, "invalid state");
+			return;
+		}
+		state->g->cloneof_set(state->e->user_name_get() + "/" + state->sn + "/" + string(s, len));
+	}
+}
+
 static void process_game_generic(struct state_t* state, enum token_t t, const char* s, unsigned len, const char** attributes)
 {
 	if (t == token_open) {
 		state->g = new game;
 		state->g->emulator_set(state->e);
 	} else if (t == token_close) {
-		game_set::const_iterator i = state->a->find(game(state->g->name_get()));
-		if (i!=state->a->end()) {
-			if (state->g->description_get().length())
-				i->auto_description_set(state->g->description_get());
-			if (state->g->manufacturer_get().length())
-				(const_cast<game&>(*i)).manufacturer_set(state->g->manufacturer_get());
-			if (state->g->year_get().length())
-				(const_cast<game&>(*i)).year_set(state->g->year_get());
-			if (state->g->cloneof_get().length())
-				(const_cast<game&>(*i)).cloneof_set(state->g->cloneof_get());
-		} else {
-			state->g->size_set(1); //para indentificar los juegos como missing deben tener algun tamaño
-			state->a->insert(*state->g);
+		if (state->g->name_without_emulator_get() != "") {
+			game_set::const_iterator i = state->a->find(game(state->g->name_get()));
+			if (i!=state->a->end()) {
+				if (state->g->description_get().length())
+					i->auto_description_set(state->g->description_get());
+				if (state->g->manufacturer_get().length())
+					(const_cast<game&>(*i)).manufacturer_set(state->g->manufacturer_get());
+				if (state->g->year_get().length())
+					(const_cast<game&>(*i)).year_set(state->g->year_get());
+				if (state->g->cloneof_get().length())
+					(const_cast<game&>(*i)).cloneof_set(state->g->cloneof_get());
+			} else {
+				state->g->size_set(1); //para indentificar los juegos como missing deben tener algun tamaño
+				state->a->insert(*state->g);
+			}
 		}
-		
 		delete state->g;
 		state->g = 0;
 	}
@@ -167,6 +212,19 @@ static void process_isdevice(struct state_t* state, enum token_t t, const char* 
 	}
 }
 
+static void process_isarcade(struct state_t* state, enum token_t t, const char* s, unsigned len, const char** attributes)
+{
+	if (t == token_data) {
+		string v = string(s, len);
+		if (!state->g) {
+			process_error(state, 0, "invalid state");
+			return;
+		}
+		if (v == "yes")
+			state->g->flag_set(true, emulator::flag_derived_romarcade);
+	}
+}
+
 static void process_name(struct state_t* state, enum token_t t, const char* s, unsigned len, const char** attributes)
 {
 	if (t == token_data) {
@@ -174,7 +232,7 @@ static void process_name(struct state_t* state, enum token_t t, const char* s, u
 			process_error(state, 0, "invalid state");
 			return;
 		}
-		state->g->name_set(state->e->user_name_get() + "/" + emu_tolower(string(s, len)));
+		state->g->name_set(state->e->user_name_get() + "/" + emu_tolower(string(s, len))); //?????
 	}
 }
 
@@ -295,6 +353,17 @@ static void process_driverstatus(struct state_t* state, enum token_t t, const ch
 	}
 }
 
+static void process_disk(struct state_t* state, enum token_t t, const char* s, unsigned len, const char** attributes)
+{
+	if (t == token_open) {
+		if (!state->g) {
+			process_error(state, 0, "invalid state");
+			return;
+		}
+		state->g->flag_set(true, emulator::flag_derived_chd);		
+	}
+}
+
 static void process_rom(struct state_t* state, enum token_t t, const char* s, unsigned len, const char** attributes)
 {
 	if (t == token_open) {
@@ -310,6 +379,21 @@ static void process_rom(struct state_t* state, enum token_t t, const char* s, un
 	}
 }
 
+static void process_diskarea(struct state_t* state, enum token_t t, const char* s, unsigned len, const char** attributes) //
+{
+	if (t == token_open) {
+		state->rom_merge = false;
+		state->rom_size = 1;
+	} else if (t == token_close) {
+		if (!state->g) {
+			process_error(state, 0, "invalid state");
+			return;
+		}
+		if (!state->rom_merge)
+			state->g->size_set(state->rom_size);
+	}
+}
+
 static void process_romsize(struct state_t* state, enum token_t t, const char* s, unsigned len, const char** attributes)
 {
 	if (t == token_data) {
@@ -322,6 +406,17 @@ static void process_rommerge(struct state_t* state, enum token_t t, const char* 
 {
 	if (t == token_data) {
 		state->rom_merge = 1;
+	}
+}
+
+static void process_inputcoins(struct state_t* state, enum token_t t, const char* s, unsigned len, const char** attributes)
+{
+	if (t == token_open) {
+		if (!state->g) {
+			process_error(state, 0, "invalid state");
+			return;
+		}
+		state->g->flag_set(true, emulator::flag_derived_romarcade);
 	}
 }
 
@@ -352,6 +447,18 @@ static void process_deviceextensionname(struct state_t* state, enum token_t t, c
 	}
 }
 
+static void process_deviceinstancebriefname(struct state_t* state, enum token_t t, const char* s, unsigned len, const char** attributes)
+{
+	if (t == token_data) {
+		if (!state->m) {
+			process_error(state, 0, "invalid state");
+			return;
+		}
+		string v = string(s, len);
+		state->m->brief = v;
+	}
+}
+
 static void process_devicename(struct state_t* state, enum token_t t, const char* s, unsigned len, const char** attributes)
 {
 	if (t == token_data) {
@@ -361,6 +468,76 @@ static void process_devicename(struct state_t* state, enum token_t t, const char
 		}
 		string v = string(s, len);
 		state->m->name = v;
+	}
+}
+
+// softwarelist
+static void process_softwarelist(struct state_t* state, enum token_t t, const char* s, unsigned len, const char** attributes) //
+{
+	if (t == token_open) {
+		state->s = new softwarelist;
+	} else if (t == token_close) {
+		if (!state->g || !state->s) {
+			process_error(state, 0, "invalid state");
+			return;
+		}
+		state->g->flag_set(true, emulator::flag_derived_softwarelist);
+		state->g->softwarelist_bag_get().insert(state->g->softwarelist_bag_get().end(), *state->s);
+		delete state->s;
+		state->s = 0;
+	}
+}
+
+// sharedfeat
+static void process_sharedfeat(struct state_t* state, enum token_t t, const char* s, unsigned len, const char** attributes)
+{
+	if (t == token_open) {
+		state->s = new softwarelist;
+	} else if (t == token_close) {
+		if (!state->g || !state->s) {
+			process_error(state, 0, "invalid state");
+			return;
+		}
+		state->s->name = state->sn;
+		state->g->softwarelist_bag_get().insert(state->g->softwarelist_bag_get().end(), *state->s);
+		delete state->s;
+		state->s = 0;
+	}
+}
+
+static void process_softwarelistname(struct state_t* state, enum token_t t, const char* s, unsigned len, const char** attributes) //
+{
+	if (t == token_data) {
+		if (!state->s) {
+			process_error(state, 0, "invalid state");
+			return;
+		}
+		string v = string(s, len);
+		state->s->name = v;
+	}
+}
+
+static void process_softwareliststatus(struct state_t* state, enum token_t t, const char* s, unsigned len, const char** attributes) //
+{
+	if (t == token_data) {
+		if (!state->s) {
+			process_error(state, 0, "invalid state");
+			return;
+		}
+		string v = string(s, len);
+		state->s->status = v;
+	}
+}
+
+static void process_softwarelistfilter(struct state_t* state, enum token_t t, const char* s, unsigned len, const char** attributes) //
+{
+	if (t == token_data) {
+		if (!state->s) {
+			process_error(state, 0, "invalid state");
+			return;
+		}
+		string v = string(s, len);
+		state->s->filter = v;
 	}
 }
 
@@ -461,9 +638,10 @@ static void process_videoaspecty(struct state_t* state, enum token_t t, const ch
 	}
 }
 
-static const char* match_generic = "menu|softwarelist"; // etiqueta inicio y fin del xml
 static const char* match_mamemessraine = "mame|mess|raine";
 static const char* match_gamemachine = "emu|game|machine|software";
+static const char* match_generic = "menu";
+static const char* match_softwarelist = "softwarelist";
 
 /**
  * Conversion table.
@@ -478,6 +656,8 @@ struct conversion_t {
 static struct conversion_t CONV1[] = {
 	{ 1, { match_mamemessraine, match_gamemachine, 0, 0, 0 }, process_game },
 	{ 1, { match_generic, match_gamemachine, 0, 0, 0 }, process_game_generic },
+	{ 1, { match_softwarelist, "name", 0, 0, 0 }, process_softwarelistnameloaded },
+	{ 1, { match_softwarelist, match_gamemachine, 0, 0, 0 }, process_software },
 	{ 0, { 0, 0, 0, 0, 0 }, 0 }
 };
 
@@ -485,6 +665,7 @@ static struct conversion_t CONV2[] = {
 	{ 2, { match_mamemessraine, match_gamemachine, "runnable", 0, 0 }, process_runnable },
 	{ 2, { match_mamemessraine, match_gamemachine, "isbios", 0, 0 }, process_isbios },
 	{ 2, { match_mamemessraine, match_gamemachine, "isdevice", 0, 0 }, process_isdevice },
+	{ 2, { match_mamemessraine, match_gamemachine, "isarcade", 0, 0 }, process_isarcade },
 	{ 2, { match_mamemessraine, match_gamemachine, "name", 0, 0 }, process_name },
 	{ 2, { match_mamemessraine, match_gamemachine, "description", 0, 0 }, process_description },
 	{ 2, { match_mamemessraine, match_gamemachine, "manufacturer", 0, 0 }, process_manufacturer },
@@ -492,14 +673,22 @@ static struct conversion_t CONV2[] = {
 	{ 2, { match_mamemessraine, match_gamemachine, "cloneof", 0, 0 }, process_cloneof },
 	{ 2, { match_mamemessraine, match_gamemachine, "romof", 0, 0 }, process_romof },
 	{ 2, { match_mamemessraine, match_gamemachine, "rom", 0, 0 }, process_rom },
+	{ 2, { match_mamemessraine, match_gamemachine, "disk", 0, 0 }, process_disk },
 	{ 2, { match_mamemessraine, match_gamemachine, "device", 0, 0 }, process_device },
 	{ 2, { match_mamemessraine, match_gamemachine, "ismechanical", 0, 0 }, process_mechanical },
+	{ 2, { match_mamemessraine, match_gamemachine, "softwarelist", 0, 0 }, process_softwarelist },
 	{ 2, { match_generic, match_gamemachine, "name", 0, 0 }, process_name },
 	{ 2, { match_generic, match_gamemachine, "description", 0, 0 }, process_description },
 	{ 2, { match_generic, match_gamemachine, "cloneof", 0, 0 }, process_cloneof },
 	{ 2, { match_generic, match_gamemachine, "manufacturer", 0, 0 }, process_manufacturer },
-	{ 2, { match_generic, match_gamemachine, "publisher", 0, 0 }, process_manufacturer },
 	{ 2, { match_generic, match_gamemachine, "year", 0, 0 }, process_year },
+	{ 2, { match_softwarelist, match_gamemachine, "name", 0, 0 }, process_softwarename },
+	{ 2, { match_softwarelist, match_gamemachine, "cloneof", 0, 0 }, process_softwarecloneof },
+	{ 2, { match_softwarelist, match_gamemachine, "description", 0, 0 }, process_description },
+	{ 2, { match_softwarelist, match_gamemachine, "year", 0, 0 }, process_year },
+	{ 2, { match_softwarelist, match_gamemachine, "publisher", 0, 0 }, process_manufacturer },
+	{ 2, { match_softwarelist, match_gamemachine, "sharedfeat", 0, 0 }, process_sharedfeat },
+	{ 2, { match_softwarelist, match_gamemachine, "part", 0, 0 }, process_device },
 	{ 0, { 0, 0, 0, 0, 0 }, 0 }
 };
 
@@ -507,6 +696,7 @@ static struct conversion_t CONV3[] = {
 	{ 3, { match_mamemessraine, match_gamemachine, "rom", "merge", 0 }, process_rommerge },
 	{ 3, { match_mamemessraine, match_gamemachine, "rom", "size", 0 }, process_romsize },
 	{ 3, { match_mamemessraine, match_gamemachine, "device", "name", 0 }, process_devicename },
+	{ 3, { match_mamemessraine, match_gamemachine, "device", "interface", 0 }, process_devicename },
 	{ 3, { match_mamemessraine, match_gamemachine, "driver", "status", 0 }, process_driverstatus },
 	{ 3, { match_mamemessraine, match_gamemachine, "video", "screen", 0 }, process_videoscreen },
 	{ 3, { match_mamemessraine, match_gamemachine, "video", "orientation", 0 }, process_videoorientation },
@@ -520,12 +710,23 @@ static struct conversion_t CONV3[] = {
     { 3, { match_mamemessraine, match_gamemachine, "display", "height", 0 }, process_videoheight },
 	{ 3, { match_mamemessraine, match_gamemachine, "video", "refresh", 0 }, process_refresh },
 	{ 3, { match_mamemessraine, match_gamemachine, "display", "refresh", 0 }, process_refresh },
+	{ 3, { match_mamemessraine, match_gamemachine, "input", "coins", 0 }, process_inputcoins },
+	{ 3, { match_mamemessraine, match_gamemachine, "softwarelist", "name", 0 }, process_softwarelistname },
+	{ 3, { match_mamemessraine, match_gamemachine, "softwarelist", "status", 0 }, process_softwareliststatus },
+	{ 3, { match_mamemessraine, match_gamemachine, "softwarelist", "filter", 0 }, process_softwarelistfilter },
+	{ 3, { match_softwarelist, match_gamemachine, "sharedfeat", "name", 0 }, process_softwareliststatus },
+	{ 3, { match_softwarelist, match_gamemachine, "sharedfeat", "value", 0 }, process_softwarelistfilter },
+	{ 3, { match_softwarelist, match_gamemachine, "part", "interface", 0 }, process_devicename },
+	{ 3, { match_softwarelist, match_gamemachine, "part", "dataarea", 0 }, process_rom },
+	{ 3, { match_softwarelist, match_gamemachine, "part", "diskarea", 0 }, process_diskarea },
 	{ 0, { 0, 0, 0, 0, 0 }, 0 }
 };
 
 static struct conversion_t CONV4[] = {
+	{ 4, { match_mamemessraine, match_gamemachine, "device", "instance", "briefname" }, process_deviceinstancebriefname },
 	{ 4, { match_mamemessraine, match_gamemachine, "device", "extension", "name" }, process_deviceextensionname },
 	{ 4, { match_mamemessraine, match_gamemachine, "input", "control", "type" }, process_mahjong },
+	{ 4, { match_softwarelist, match_gamemachine, "part", "dataarea", "size" }, process_romsize },
 	{ 0, { 0, 0, 0, 0, 0 }, 0 }
 };
 
@@ -553,8 +754,11 @@ static struct conversion_t* identify(unsigned depth, const struct level_t* level
 			if (conv[i].name[j] == match_mamemessraine) {
 				if (strcmp(level[j].tag, "mame") != 0 && strcmp(level[j].tag, "mess") != 0 && strcmp(level[j].tag, "raine") != 0)
 					equal = false;
+			} else if (conv[i].name[j] == match_softwarelist) {
+				if (strcmp(level[j].tag, "softwarelist") != 0)
+					equal = false;
 			} else if (conv[i].name[j] == match_generic) {
-				if (strcmp(level[j].tag, "menu") != 0 && strcmp(level[j].tag, "softwarelist") != 0)
+				if (strcmp(level[j].tag, "menu") != 0)
 					equal = false;
 			} else if (conv[i].name[j] == match_gamemachine) {
 				if (strcmp(level[j].tag, "emu") != 0 && strcmp(level[j].tag, "game") != 0 && strcmp(level[j].tag, "machine") != 0 && strcmp(level[j].tag, "software") != 0)
@@ -672,6 +876,8 @@ bool mame_info::load_xml(istream& is, game_set& gar)
 	state.g = 0;
 	state.a = &gar;
 	state.m = 0;
+	state.s = 0;
+	state.sn = string();
 
 	XML_SetUserData(state.parser, &state);
 	XML_SetElementHandler(state.parser, start_handler, end_handler);
@@ -725,6 +931,8 @@ bool generic::load_xml(istream& is, game_set& gar)
 	state.g = 0;
 	state.a = &gar;
 	state.m = 0;
+	state.s = 0;
+	state.sn = string();
 
 	XML_SetUserData(state.parser, &state);
 	XML_SetElementHandler(state.parser, start_handler, end_handler);
@@ -761,4 +969,3 @@ bool generic::load_xml(istream& is, game_set& gar)
 
 	return true;
 }
-

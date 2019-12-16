@@ -22,14 +22,15 @@
 
 #include "mconfig.h"
 #include "text.h"
+#include "play.h"
 
 #include "advance.h"
 #include <windows.h> //warlock
 #include <sstream>
 
 using namespace std;
-
 extern string EmuladorAtivo; //warlock
+vector<string> ListaEmuladores;
 // --------------------------------------------------------------------------
 // Configuration init
 
@@ -51,7 +52,7 @@ static adv_conf_enum_int OPTION_SORT[] = {
 static adv_conf_enum_int OPTION_MODE[] = {
 { "list", mode_list },
 { "list_mixed", mode_list_mixed },
-{ "custom", mode_custom },
+{ "layout", mode_custom },
 { "tile_tiny", mode_tile_tiny },
 { "tile_small", mode_tile_small },
 { "tile_normal", mode_tile_normal },
@@ -91,9 +92,12 @@ static adv_conf_enum_int OPTION_SAVER[] = {
 { "flyers", saver_flyer },
 { "cabinets", saver_cabinet },
 { "titles", saver_title },
-{ "shutdown", saver_shutdown },
-{ "exit", saver_exit },
 { "none", saver_off }
+};
+
+static adv_conf_enum_int OPTION_IDLE_EXIT[] = {
+{ "normal", idle_exit_normal },
+{ "shutdown", idle_exit_shutdown },
 };
 
 static adv_conf_enum_int OPTION_GAMESAVER[] = {
@@ -119,9 +123,9 @@ static adv_conf_enum_int OPTION_EVENTMODE[] = {
 };
 
 static adv_conf_enum_int OPTION_MERGE[] = {
-{ "none", merge_no },
-{ "differential", merge_differential },
-{ "parent", merge_parent },
+{ "non-merged", merge_no },
+{ "split", merge_differential },
+{ "merged", merge_parent },
 { "any", merge_any },
 { "disable", merge_disable }
 };
@@ -162,11 +166,6 @@ static bool config_path_import(const string& s, string& a0)
 
 	a0 = path_import(file_config_file_home(a0.c_str()));
 
-	if (!file_exists(a0)) {
-		target_err("File '%s' not found.\n", a0.c_str());
-		return false;
-	}
-
 	return true;
 }
 
@@ -181,11 +180,6 @@ static bool config_path(const string& s, string& a0)
 		return true;
 
 	a0 = file_config_file_home(a0.c_str());
-
-	if (!file_exists(a0)) {
-		target_err("File '%s' not found.\n", a0.c_str());
-		return false;
-	}
 
 	return true;
 }
@@ -223,6 +217,18 @@ static bool config_split(const string& s, string& a0, string& a1, string& a2, st
 		config_error_a(s);
 		return false;
 	}
+	return true;
+}
+
+static bool config_split_system(string& a1, string& as)
+{
+	string replace = subs(a1, ":", " ");
+
+	if (!arg_split(replace, a1, as)) {
+		config_error_a(a1);
+		return false;
+	}
+	    
 	return true;
 }
 
@@ -292,6 +298,8 @@ void config_state::conf_register(adv_conf* config_context)
 	conf_string_register_default(config_context, "menu_systems_icons", "");
 	conf_string_register_default(config_context, "menu_systems_marquees", "");
 	conf_string_register_default(config_context, "menu_systems_titles", "");
+	conf_string_register_default(config_context, "menu_systems_default_snap", "none");
+	conf_string_register_default(config_context, "menu_systems_default_marquee", "none");
 	conf_string_register_default(config_context, "menu_systems_layout", "");
 	conf_string_register_default(config_context, "menu_systems_background", "");
 	conf_string_register_default(config_context, "menu_systems_help", "");
@@ -312,8 +320,10 @@ void config_state::conf_register(adv_conf* config_context)
 	conf_string_register_multi(config_context, "emulator_titles");
 	conf_string_register_multi(config_context, "emulator_include");
 	conf_string_register_multi(config_context, "emulator_attrib");
-	conf_string_register_multi(config_context, "emulator_file_custom");
+	conf_string_register_multi(config_context, "emulator_layout");
 	conf_string_register_multi(config_context, "emulator_background");
+	conf_string_register_multi(config_context, "emulator_default_snap");
+	conf_string_register_multi(config_context, "emulator_default_marquee");
 	conf_string_register_multi(config_context, "emulator_help");
 	conf_string_register_multi(config_context, "emulator_start");
 	conf_string_register_multi(config_context, "emulator_font");
@@ -337,13 +347,13 @@ void config_state::conf_register(adv_conf* config_context)
 	conf_bool_register_default(config_context, "ui_console", 0);
 	conf_bool_register_default(config_context, "ui_menukey", 1);
 	conf_string_register_multi(config_context, "event_assign");
-	//conf_string_register_default(config_context, "event_assign setcoin", "f11 or 1joy_7");
-	//conf_string_register_default(config_context, "event_assign escemule", "lcontrol or 1joy_8");
 	conf_string_register_multi(config_context, "ui_color");
 	conf_string_register_default(config_context, "idle_start", "0 0");
 	conf_string_register_default(config_context, "idle_screensaver", "60 10");
 	conf_int_register_enum_default(config_context, "idle_screensaver_preview", conf_enum(OPTION_SAVER), saver_snap);
-
+	conf_int_register_default(config_context, "idle_exit_time", 0);
+	conf_int_register_enum_default(config_context, "idle_exit_type", conf_enum(OPTION_IDLE_EXIT), idle_exit_normal);
+	
 	// REM SELECTED
 	conf_string_register_default(config_context, "menu_pos", "0 0");
 	// opciones obsoletas del rc
@@ -356,7 +366,7 @@ void config_state::conf_register(adv_conf* config_context)
 	conf_int_register_enum_default(config_context, "ui_game", conf_enum(OPTION_GAMESAVER), saver_snap);
 	conf_int_register_enum_default(config_context, "difficulty", conf_enum(OPTION_DIFFICULTY), difficulty_none);
 	conf_int_register_enum_default(config_context, "preview", conf_enum(OPTION_PREVIEW), preview_snap);
-	conf_float_register_limit_default(config_context, "preview_expand", 1.0, 3.0, 1.15);
+	conf_float_register_limit_default(config_context, "preview_expand", 1.0, 6.0, 1.15);
 	conf_string_register_default(config_context, "preview_default", "none");
 	conf_string_register_default(config_context, "preview_default_snap", "none");
 	conf_string_register_default(config_context, "preview_default_flyer", "none");
@@ -367,8 +377,14 @@ void config_state::conf_register(adv_conf* config_context)
 	conf_int_register_enum_default(config_context, "event_mode", conf_enum(OPTION_EVENTMODE), 1);
 	conf_bool_register_default(config_context, "event_alpha", 1);
 	conf_int_register_enum_default(config_context, "ui_clip", conf_enum(OPTION_CLIPMODE), clip_single);
-	conf_int_register_enum_default(config_context, "merge", conf_enum(OPTION_MERGE), merge_differential);
+	conf_int_register_enum_default(config_context, "romset_type", conf_enum(OPTION_MERGE), merge_no);
 	conf_int_register_limit_default(config_context, "icon_space", 10, 500, 43);
+	conf_string_register_default(config_context, "sound_foreground_nocoin", "none");
+	conf_string_register_default(config_context, "sound_foreground_notime", "none");
+	conf_string_register_default(config_context, "background_config_menu", "none");
+	conf_string_register_default(config_context, "sound_foreground_coin", "none");
+	conf_string_register_default(config_context, "sound_foreground_zgeral", "default");
+	conf_string_register_default(config_context, "sound_foreground_zerado", "default");
 	conf_string_register_default(config_context, "sound_foreground_begin", "default");
 	conf_string_register_default(config_context, "sound_foreground_end", "default");
 	conf_string_register_default(config_context, "sound_foreground_key", "default");
@@ -379,8 +395,8 @@ void config_state::conf_register(adv_conf* config_context)
 	conf_string_register_default(config_context, "sound_background_end", "none");
 	conf_string_register_default(config_context, "sound_background_start", "none");
 	conf_string_register_default(config_context, "sound_background_stop", "none");
-	conf_string_register_default(config_context, "sound_background_loop_dir", "none");
-	conf_int_register_limit_default(config_context, "display_size", 160, 2048, 1024);
+	conf_string_register_default(config_context, "sound_background_loop_dir", "\"mp3\"");
+	conf_string_register_default(config_context, "display_size", "1024");
 	conf_string_register_default(config_context, "ui_font", "auto");
 	conf_string_register_default(config_context, "ui_fontsize", "auto");
 	conf_string_register_default(config_context, "display_orientation", "");
@@ -406,10 +422,11 @@ void config_state::conf_register(adv_conf* config_context)
 	conf_bool_register_default(config_context, "rem_selected", 1);
 	conf_bool_register_default(config_context, "favorites_filtertype", 0);
 	conf_bool_register_default(config_context, "security_exit", 1);
-//ShellExecuteA(0, "open", "HotCoin.exe", "hotcoinOn", ".\\", SW_HIDE);  //Warlock
+	conf_string_register_default(config_context, "mame_history", "none");
+	conf_string_register_default(config_context, "mame_info", "none");
+	conf_string_register_default(config_context, "xml_dir", "default");
+	conf_string_register_default(config_context, "favorites_dir", "favlist");
 }
-	
-	
 
 // -------------------------------------------------------------------------
 // Configuration load
@@ -564,9 +581,11 @@ static bool config_load_iterator_emu_path_set(adv_conf* config_context, const st
 			a1 = file_config_file_home(a1.c_str());
 		}
 		
+		//Impedir de deletar info do jogo que foi removido warlock 
 		if (!config_emulator_load(a0, emu, set, a1)) {
-			//config_error_a(s);//warlock
-			//return true;
+			//config_error_a(s);
+			//return false;
+			
 		}
 		conf_iterator_next(&i);
 	}
@@ -582,16 +601,18 @@ static bool config_load_iterator_emu_set(adv_conf* config_context, const string&
 		s = conf_iterator_string_get(&i);
 		if (!config_split(s, a0, a1))
 			return false;
+		//Impedir de deletar info do jogo que foi removido warlock 
 		if (!config_emulator_load(a0, emu, set, a1)) {
-			//config_error_a(s); \\warlock
-			//return true;
+			//config_error_a(s);
+			//return false;
 		}
+		
 		conf_iterator_next(&i);
 	}
 	return true;
 }
 
-static bool config_load_iterator_emu_attrib(adv_conf* config_context, const string& tag, pemulator_container& emu)
+static bool config_load_iterator_emu_attrib(adv_conf* config_context, const string& tag, pemulator_container& emu, bool quiet)
 {
 	adv_conf_iterator i;
 	conf_iterator_begin(&i, config_context, tag.c_str());
@@ -601,8 +622,9 @@ static bool config_load_iterator_emu_attrib(adv_conf* config_context, const stri
 		if (!config_split(s, a0, a1, a2))
 			return false;
 		if (!config_emulator_attrib_load(a0, emu, a1, a2)) {
-			//config_error_a(s); //warlock remover invalido argument quando não achar emu
-			//return true;
+			//if(!quiet)
+				//config_error_a(s);
+			//return false;
 		}
 		conf_iterator_next(&i);
 	}
@@ -703,13 +725,28 @@ static bool config_load_iterator_emu(adv_conf* config_context, const string& tag
 			config_error_a(s);
 			return false;
 		}
+		// separa a1 en tipo de emulador y sistema
+		string as; //system
+		if (!config_split_system(a1, as))
+			return false;
+		
 		emulator* e;
 		if (a1 == "mame") {
-			e = new wmame(a0, a2, a3);
+			if (as.length()==0)
+				e = new wmame(a0, a2, a3);
+			else
+				e = new wmess(a0, a1, as, a2, a3);
+		} else if (a1 == "sdlmame") {
+			if (as.length() == 0)
+				e = new sdlmame(a0, a2, a3);
+			else
+				e = new sdlmess(a0, a1, as, a2, a3);
+		} else if (a1 == "sdlmess") {
+				e = new sdlmess(a0, a1, as, a2, a3);
+		} else if (a1 == "mess") {
+				e = new wmess(a0, a1, as, a2, a3);
 		} else if (a1 == "dmame") {
 			e = new dmame(a0, a2, a3);
-		} else if (a1 == "sdlmame") {
-			e = new sdlmame(a0, a2, a3);
 		} else if (a1 == "dmess") {
 			e = new dmess(a0, a2, a3);
 		} else if (a1 == "draine") {
@@ -726,12 +763,16 @@ static bool config_load_iterator_emu(adv_conf* config_context, const string& tag
 			config_error_la(tag + " " + s, a1);
 			return false;
 		}
+
+		//Cria uma lista com todos emuladores adicionado no sistema Warlock
+		ListaEmuladores.push_back(a0);
 		
+		//Verifica se o emulador está removido ou adicionado ao sistema
 		int Ret=0;
 		char buffer1[100];
-		Ret = GetPrivateProfileStringA("REMOVER_EMULADOR",a0.c_str(),"1", buffer1, 100, ".\\advmenu.ini"); 
+		Ret = GetPrivateProfileStringA("REMOVER_EMULADOR",a0.c_str(),"0", buffer1, 100, ".\\advmenu.ini"); 
 		if (Ret){ //warlock
-			if (atoi(buffer1) >= 1) {
+			if (atoi(buffer1) <= 0) {
 				emu.insert(emu.end(), e);
 			} else{
 				
@@ -739,8 +780,7 @@ static bool config_load_iterator_emu(adv_conf* config_context, const string& tag
 			}
 		}
 		conf_iterator_next(&i);
-		
-		
+
 	}
 
 	return true;
@@ -754,6 +794,8 @@ static bool config_load_iterator_favorites(adv_conf* config_context, const strin
 		fav.insert(fav.end(), f);
 	}
 	
+
+		
 	adv_conf_iterator i;
 	conf_iterator_begin(&i, config_context, tag.c_str());
 	while (!conf_iterator_is_end(&i)) {
@@ -807,7 +849,8 @@ bool config_state::load_iterator_import(adv_conf* config_context, const string& 
 			config_error_oa(tag, a0);
 			return false;
 		}
-
+		
+		
 		if (!config_is_emulator(emu, a1)) {
 			config_error_oa(tag, a1);
 			return false;
@@ -907,19 +950,23 @@ bool config_state::load_iterator_game(adv_conf* config_context, const string& ta
 		}
 
 		if (!load_game(game, type, time, session, desc)) {
-			++ignored_count;
-		/*	if (ignored_count < 10)
-				target_err("Ignoring info for game '%s'.\n", game.c_str());
-			else if (ignored_count == 10)
-				target_err("And also for other games.\n"); */
+			if (!quiet) {
+				++ignored_count;
+				/*
+				if (ignored_count < 10)
+					//target_err("Ignoring info for game '%s'.\n", game.c_str()); //Mensagem de erro se o emulador não existir e tiver jogo no .rc WARLOCK
+				else if (ignored_count == 10)
+					//target_err("And also for other games.\n"); //warlock
+			*/
+			}
 		}
 
 		conf_iterator_next(&i);
 	}
 
-	/*if (ignored_count > 0)
-		target_err("You may lose the game sessions and time information.\n");
-*/
+	//if (ignored_count > 0)
+		//target_err("You may lose the game sessions and time information.\n"); //warlock
+
 	return true;
 }
 
@@ -1050,7 +1097,6 @@ bool config_state::load(adv_conf* config_context, bool opt_verbose)
 		return false;
 	idle_start_first = atoi(a0.c_str());
 	idle_start_rep = atoi(a1.c_str());
-	
 	// REM SELECTED
 	rem_selected = conf_bool_get_default(config_context, "rem_selected");
 	// carga la posicion del seleccionado para "rem_selected no"
@@ -1063,12 +1109,24 @@ bool config_state::load(adv_conf* config_context, bool opt_verbose)
 		return false;
 	idle_saver_first = atoi(a0.c_str());
 	idle_saver_rep = atoi(a1.c_str());
+	idle_exit_time = conf_int_get_default(config_context, "idle_exit_time");
+	idle_exit_type = (idle_exit_t)conf_int_get_default(config_context, "idle_exit_type");
 	if (!config_split(conf_string_get_default(config_context, "event_repeat"), a0, a1))
 		return false;
 	repeat = atoi(a0.c_str());
 	repeat_rep = atoi(a1.c_str());
 	disable_special = !conf_bool_get_default(config_context, "input_hotkey");
-	video_size = conf_int_get_default(config_context, "display_size");
+	if (!config_split(conf_string_get_default(config_context, "display_size"), a0, a1))
+		return false;
+	video_sizex = atoi(a0.c_str());
+	video_sizey = atoi(a1.c_str());
+	if (video_sizey == 0)
+		video_sizey = video_sizex*3/4;
+	if (video_sizex < 160 || video_sizex > 2048 || video_sizey < 90 || video_sizey > 1638) {
+		target_err("Invalid argument '%s' for option 'display_size'\nValid arguments are size_x from 160 to 2048 and size_y from 90 to 1638\n", a0.c_str());
+		return false;
+	}
+	
 	if (!config_path(conf_string_get_default(config_context, "ui_font"), video_font_path))
 		return false;
 	if (!config_split(conf_string_get_default(config_context, "ui_fontsize"), a0, a1))
@@ -1102,16 +1160,36 @@ bool config_state::load(adv_conf* config_context, bool opt_verbose)
 		return false;
 	if (!config_path_import(conf_string_get_default(config_context, "preview_default_title"), preview_default_title))
 		return false;
-		
+
+	if (!config_path_import(conf_string_get_default(config_context, "mame_history"), mame_history))
+		return false;
+	if (!config_path_import(conf_string_get_default(config_context, "mame_info"), mame_info))
+		return false;
+	
+	if (!config_split(conf_string_get_default(config_context, "xml_dir"), xml_dir))
+		return false;
+	
 	preview_fast = (bool)conf_int_get_default(config_context, "event_mode");
 	alpha_mode = (bool)conf_bool_get_default(config_context, "event_alpha");
 	clip_mode = (clip_mode_t)conf_int_get_default(config_context, "ui_clip");
-	merge = (merge_t)conf_int_get_default(config_context, "merge");
+	merge = (merge_t)conf_int_get_default(config_context, "romset_type");
 	icon_space = conf_int_get_default(config_context, "icon_space");
 
 	security_exit = conf_bool_get_default(config_context, "security_exit");
 	
+	if (!config_path_import(conf_string_get_default(config_context, "sound_foreground_zgeral"), sound_foreground_zgeral))
+		return false;
+	if (!config_path_import(conf_string_get_default(config_context, "sound_foreground_zerado"), sound_foreground_zerado))
+		return false;
 	if (!config_path_import(conf_string_get_default(config_context, "sound_foreground_begin"), sound_foreground_begin))
+		return false;
+	if (!config_path_import(conf_string_get_default(config_context, "sound_foreground_notime"), sound_foreground_notime))
+		return false;
+	if (!config_path_import(conf_string_get_default(config_context, "sound_foreground_nocoin"), sound_foreground_nocoin))
+		return false;
+	if (!config_path_import(conf_string_get_default(config_context, "background_config_menu"), background_config_menu))
+		return false;
+	if (!config_path_import(conf_string_get_default(config_context, "sound_foreground_coin"), sound_foreground_coin))
 		return false;
 	if (!config_path_import(conf_string_get_default(config_context, "sound_foreground_end"), sound_foreground_end))
 		return false;
@@ -1150,6 +1228,10 @@ bool config_state::load(adv_conf* config_context, bool opt_verbose)
 		return false;
 	if (!config_load_menu_systems_set(config_context, "menu_systems_titles", menu_systems, &systems::user_title_path_set))
 		return false;
+	if (!config_load_menu_systems_path_set(config_context, "menu_systems_default_snap", menu_systems, &systems::user_default_snap_path_set))
+		return false;
+	if (!config_load_menu_systems_path_set(config_context, "menu_systems_default_marquee", menu_systems, &systems::user_default_marquee_path_set))
+		return false;
 	if (!config_load_menu_systems_set(config_context, "menu_systems_layout", menu_systems, &systems::custom_file_path_set))
 		return false;
 	if (!config_load_menu_systems_path_set(config_context, "menu_systems_background", menu_systems, &systems::nocustom_background_path_set))
@@ -1169,7 +1251,7 @@ bool config_state::load(adv_conf* config_context, bool opt_verbose)
 	
 	if (!config_load_iterator_emu(config_context, "emulator", emu))
 		return false;
-	if (!config_load_iterator_emu_attrib(config_context, "emulator_attrib", emu))
+	if (!config_load_iterator_emu_attrib(config_context, "emulator_attrib", emu, quiet))
 		return false;
 	if (!config_load_iterator_emu_set(config_context, "emulator_roms", emu, &emulator::user_rom_path_set))
 		return false;
@@ -1187,7 +1269,11 @@ bool config_state::load(adv_conf* config_context, bool opt_verbose)
 		return false;
 	if (!config_load_iterator_emu_set(config_context, "emulator_titles", emu, &emulator::user_title_path_set))
 		return false;
-	if (!config_load_iterator_emu_set(config_context, "emulator_file_custom", emu, &emulator::custom_file_path_set))
+	if (!config_load_iterator_emu_path_set(config_context, "emulator_default_snap", emu, &emulator::user_default_snap_path_set))
+		return false;
+	if (!config_load_iterator_emu_path_set(config_context, "emulator_default_marquee", emu, &emulator::user_default_marquee_path_set))
+		return false;
+	if (!config_load_iterator_emu_set(config_context, "emulator_layout", emu, &emulator::custom_file_path_set))
 		return false;
 	if (!config_load_iterator_emu_path_set(config_context, "emulator_background", emu, &emulator::nocustom_background_path_set))
 		return false;
@@ -1205,6 +1291,8 @@ bool config_state::load(adv_conf* config_context, bool opt_verbose)
 		return false;
 
 	// carga las opciones de los emuladores del tipo (emulador/opcion valor)
+	if (!menu_systems->config_get().load(config_context, config_normalize(menu_systems->user_name_get())))
+		return false;
 	for(pemulator_container::iterator i=emu.begin();i!=emu.end();++i) {
 		if (!(*i)->config_get().load(config_context, config_normalize((*i)->user_name_get())))
 			return false;
@@ -1217,24 +1305,40 @@ bool config_state::load(adv_conf* config_context, bool opt_verbose)
 
 	// select the active emulators
 	for(pemulator_container::iterator i=emu.begin();i!=emu.end();++i) {
+		
 		if ((*i)->is_present()) {
 			emu_active.insert(emu_active.end(), *i);
 		} else {
 			if (!quiet)
-				target_err("Emulator '%s' not found, ignoring it.\n", (*i)->user_exe_path_get().c_str());
+				target_err("Emulador '%s' não encontrado, ignorado do carregamento.\n", (*i)->user_exe_path_get().c_str());
 		}
 	}
 
 	if (emu_active.size() == 0) {
-		target_err("Não foi encontrado emuladores. Adicione um emulador em 'Advmenu.ini' na tag 'REMOVER_EMULADOR', 1 para adicionar e 0 para remover.\n");
+		target_err("Nenhum emulador encontrado no sistema, caso tenha removido todos pelo menu de configuracao, então re-adicione indo no advmenu.ini na chave Remover_emuladores e mude o valor para 0 Zero.\n");
 		return false;
-	}              
+	}
 
+	// Comprueba si el directorio xml_path existe, si no: lo crea, si falla la creacion: xml_dir por defecto
+	if (xml_dir == "default")
+		xml_dir = "";
+	
+	if (xml_dir != "") {
+		string dir = file_config_file_home((slash_add(xml_dir)).c_str());
+		if (!dir.empty() && access(dir.c_str(), F_OK) != 0) {
+			if (target_mkdir(dir.c_str()) != 0) {
+				xml_dir = "";
+				if (!quiet)
+					target_err("Error creating dir %s\n", dir.c_str());
+			}
+		}
+	}
+	
 	// load the game definitions
 	for(pemulator_container::iterator i=emu_active.begin();i!=emu_active.end();) {
 		if (opt_verbose)
 			target_nfo("log: load game for %s\n", (*i)->user_name_get().c_str());
-		if (!(*i)->load_game(gar, quiet)) {
+		if (!(*i)->load_game(xml_dir, gar, quiet)) {
 			if (!quiet)
 				target_err("Emulator '%s' without game information, ignoring it.\n", (*i)->user_exe_path_get().c_str());
 			pemulator_container::iterator j = i;
@@ -1293,7 +1397,6 @@ bool config_state::load(adv_conf* config_context, bool opt_verbose)
 		return false;
 	}
 
-
 	// MENU SYSTEMS
 	// establece los emuladores del Menu Systems como juegos
 	for(pemulator_container::iterator j=emu_active.begin();j!=emu_active.end();++j) {
@@ -1310,7 +1413,7 @@ bool config_state::load(adv_conf* config_context, bool opt_verbose)
 			target_err("Menu Systems without configuration.\n");
 	}
 	// carga la informacion de los emuladores LST/XML 
-	if (!menu_systems->load_game(gar, quiet)) {
+	if (!menu_systems->load_game(xml_dir, gar, quiet)) {
 		if (!quiet)
 			target_err("Menu Systems without emu information.\n");
 	}
@@ -1352,21 +1455,21 @@ bool config_state::load(adv_conf* config_context, bool opt_verbose)
 		i->auto_type_set(type.undefined_get());
 	}
 
-	// load the emulator data
-	for(pemulator_container::iterator i=emu_active.begin();i!=emu_active.end();++i) {
-		if (opt_verbose)
-			target_nfo("log: load data for %s\n", (*i)->user_name_get().c_str());
-		if (!(*i)->load_data(gar)) {
-			return false;
-		}
-	}
-
-	// MENU SYSTEMS
-	// load the emulator active
+	// load the emulators include
 	if (menu_systems_activated) {
 		include_emu_orig.clear();
 		include_emu_orig.insert(include_emu_orig.end(), menu_systems->user_name_get());
-	} else if (!config_load_iterator_emu_include(config_context, "emulator_include", include_emu_orig)) {
+	} else if (config_load_iterator_emu_include(config_context, "emulator_include", include_emu_orig)) {
+		for(emulator_container::iterator i=include_emu_orig.begin();i!=include_emu_orig.end();) {
+			if (!config_is_emulator(emu_active, *i)) {
+				emulator_container::iterator j = i;
+				++i;
+				include_emu_orig.erase(j);
+			} else {
+				++i;
+			}
+		}
+	} else {
 		return false;
 	}
 	
@@ -1399,14 +1502,25 @@ bool config_state::load(adv_conf* config_context, bool opt_verbose)
 
 	if (!config_split(conf_string_get_default(config_context, "favorites_include"), default_include_favorites_orig))
 		return false;
-	if (default_include_favorites_orig == "") {
+
+	bool include_favorites_valid = false;
+	for(pfavorites_container::const_iterator i=favorites.begin();i!=favorites.end();++i) {
+		if ((*i)->name_get() == default_include_favorites_orig) {
+			include_favorites_valid = true;
+			break;
+		}
+	}
+	
+	if (!include_favorites_valid || default_include_favorites_orig == "") {
 		default_include_favorites_orig = "All Games";
 	}
 
 	favorites_filtertype = conf_bool_get_default(config_context, "favorites_filtertype");
-
+	
+	if (!config_split(conf_string_get_default(config_context, "favorites_dir"), favorites_dir))
+		return false;
 	for(pfavorites_container::const_iterator i=favorites.begin();i!=favorites.end();++i) {
-		if(!(*i)->import())
+		if(!(*i)->import(favorites_dir))
 			target_err("Failed to import data from the favorites list '%s'.\n", (*i)->name_get().c_str());
 	}
 	
@@ -1525,9 +1639,7 @@ void config_state::conf_default(adv_conf* config_context)
 
 	conf_iterator_begin(&i, config_context, "favorites");
 	if (conf_iterator_is_end(&i)) {
-		conf_set(config_context, "", "favorites", "\"Favorites #1\"");
-		conf_set(config_context, "", "favorites", "\"Favorites #2\"");
-		conf_set(config_context, "", "favorites", "\"Favorites #3\"");
+		conf_set(config_context, "", "favorites", "\"Favorites\"");
 	}
 
 	conf_iterator_begin(&i, config_context, "type");
@@ -1547,7 +1659,7 @@ void config_state::conf_default(adv_conf* config_context)
 		conf_set(config_context, "", "type", "\"Filler\"");
 		conf_set(config_context, "", "type", "\"Racing\"");
 		conf_set(config_context, "", "type", "\"Flipper\"");
-		conf_set(config_context, "", "type", "\"<Lista De Jogos>\"");
+		conf_set(config_context, "", "type", "\"-LISTA COMPLETA-\"");
 	}
 
 	conf_iterator_begin(&i, config_context, "ui_color");
@@ -1567,7 +1679,7 @@ void config_state::conf_default(adv_conf* config_context)
 bool config_state::save_favorites() const
 {
 	for(pfavorites_container::const_iterator i=favorites.begin();i!=favorites.end();++i) {
-		if(!(*i)->save())
+		if(!(*i)->save(favorites_dir))
 			return false;			
 	}
 	return true;
@@ -1578,9 +1690,12 @@ bool config_state::save(adv_conf* config_context) const
 	conf_int_set(config_context, "", "mode", default_mode_orig);
 	conf_int_set(config_context, "", "sort", default_sort_orig);
 	conf_int_set(config_context, "", "preview", default_preview_orig);
-
+	
 	conf_remove(config_context, "", "favorites_include");
 	conf_string_set(config_context, "", "favorites_include", config_out(default_include_favorites_orig).c_str());
+	
+	//Salva o volume
+	conf_int_set(config_context, "", "sound_volume", play_attenuation_get());
 
 	conf_remove(config_context, "", "type_include");
 	for(category_container::const_iterator i=default_include_type_orig.begin();i!=default_include_type_orig.end();++i) {
@@ -1625,6 +1740,7 @@ bool config_state::save(adv_conf* config_context) const
 	conf_bool_set(config_context, "", "security_exit", security_exit);
 
 	// guarda las opciones de los emuladores del tipo (emulador/opcion valor) del rc
+	menu_systems->config_get().save(config_context, config_normalize(menu_systems->user_name_get()));
 	for(pemulator_container::const_iterator i=emu.begin();i!=emu.end();++i) {
 		(*i)->config_get().save(config_context, config_normalize((*i)->user_name_get()));
 	}
@@ -1660,7 +1776,7 @@ bool config_state::save(adv_conf* config_context) const
 
 	conf_string_set(config_context, "", "display_orientation", s.c_str());
 
-	conf_remove(config_context, "", "game"); //warlock Impede de deletar informações do Advmenu.rc
+	conf_remove(config_context, "", "game");
 	for(game_set::const_iterator i=gar.begin();i!=gar.end();++i) {
 		if (0
 			|| i->is_user_type_set()
@@ -1669,9 +1785,8 @@ bool config_state::save(adv_conf* config_context) const
 			|| (i->is_user_description_set() && i->description_get().length()!=0)
 		) {
 			ostringstream f;
-			
 			f << "\"" << i->name_get() << "\"";
-			
+
 			f << " \"\""; //apartir de ahora los datos de los favoritos no se guarda en el RC
 
 			f << " \"";
@@ -1802,10 +1917,14 @@ void config_state::sub_enable()
 {
 	if (include_emu_effective.size() == 1) {
 		sub_emu = 0;
-		for(pemulator_container::iterator i=emu.begin();i!=emu.end();++i) {
-			if ((*i)->user_name_get() == *include_emu_effective.begin()) {
-				sub_emu = *i;
-				break;
+		if (menu_systems->user_name_get() == *include_emu_effective.begin()) {
+			sub_emu = menu_systems;
+		} else {
+			for(pemulator_container::iterator i=emu.begin();i!=emu.end();++i) {
+				if ((*i)->user_name_get() == *include_emu_effective.begin()) {
+					sub_emu = *i;
+					break;
+				}
 			}
 		}
 	} else if (include_emu_effective.size() == 0 && emu_active.size() == 1) {
@@ -1934,6 +2053,14 @@ bool config_state::resetexit_get()
 	return resetexit;
 }
 
+merge_t config_state::merge_get()
+{
+	if (sub_has() && sub_get().merge_has())
+		return sub_get().merge_get();
+	else
+		return merge;
+}
+
 void config_state::sort_set(listsort_t A)
 {
 	if (sub_has())
@@ -1964,6 +2091,12 @@ void config_state::include_type_set(const category_container& A)
 		sub_get().include_type_set(A);
 	else
 		default_include_type_effective = A;
+}
+
+void config_state::merge_set(merge_t A)
+{
+	if (sub_has())
+		sub_get().merge_set(A);
 }
 
 // ------------------------------------------------------------------------
@@ -2156,6 +2289,16 @@ bool config_emulator_state::load(adv_conf* config_context, const string& section
 		resetgame_set_unique = false;
 	}
 
+	if (conf_int_section_get(config_context, section.c_str(), "romset_type", &i) == 0) {
+		merge_set_orig = true;
+		merge_orig = (merge_t)i;
+		merge_set_effective = true;
+		merge_effective = (merge_t)i;
+	} else {
+		merge_set_orig = false;
+		merge_set_effective = false;
+	}
+
 	return true;
 }
 
@@ -2166,6 +2309,7 @@ void config_emulator_state::save(adv_conf* config_context, const string& section
 	} else {
 		conf_remove(config_context, section.c_str(), "mode");
 	}
+
 
 	// REM SELECTED
 	// borra las opciones obsoletas del rc
@@ -2190,6 +2334,13 @@ void config_emulator_state::save(adv_conf* config_context, const string& section
 			conf_string_set(config_context, section.c_str(), "type_include", config_out(*i).c_str());
 		}
 	}
+
+	if (merge_set_orig) {
+		conf_int_set(config_context, section.c_str(), "romset_type", merge_orig);
+	} else {
+		conf_remove(config_context, section.c_str(), "romset_type");
+	}
+	
 }
 
 void config_emulator_state::restore_load()
@@ -2198,10 +2349,12 @@ void config_emulator_state::restore_load()
 	mode_effective = mode_orig;
 	preview_effective = preview_orig;
 	include_type_effective = include_type_orig;
+	merge_effective = merge_orig;
 	sort_set_effective = sort_set_orig;
 	mode_set_effective = mode_set_orig;
 	preview_set_effective = preview_set_orig;
 	include_type_set_effective = include_type_set_orig;
+	merge_set_effective = merge_set_orig;
 }
 
 void config_emulator_state::restore_save()
@@ -2210,10 +2363,12 @@ void config_emulator_state::restore_save()
 	mode_orig = mode_effective;
 	preview_orig = preview_effective;
 	include_type_orig = include_type_effective;
+	merge_orig = merge_effective;
 	sort_set_orig = sort_set_effective;
 	mode_set_orig = mode_set_effective;
 	preview_set_orig = preview_set_effective;
 	include_type_set_orig = include_type_set_effective;
+	merge_set_orig = merge_set_effective;
 }
 
 bool config_emulator_state::sort_has()
@@ -2308,6 +2463,28 @@ void config_emulator_state::preview_unset()
 void config_emulator_state::include_type_unset()
 {
 	include_type_set_effective = false;
+}
+
+// romset_type
+bool config_emulator_state::merge_has()
+{
+	return merge_set_effective;
+}
+//
+merge_t config_emulator_state::merge_get()
+{
+	return merge_effective;
+}
+//
+void config_emulator_state::merge_set(merge_t A)
+{
+	merge_set_effective = true;
+	merge_effective = A;
+}
+//
+void config_emulator_state::merge_unset()
+{
+	merge_set_effective = false;
 }
 
 void invertir_colores(string& s, string& color) {

@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
-
+ 
 #ifndef __COMMON_H
 #define __COMMON_H
 
@@ -84,7 +84,7 @@ std::string file_select_random(const path_container& c);
 bool file_exists(const std::string& path);
 
 std::string file_read(const std::string& file);
-bool file_write(const std::string& path, const std::string& text);
+bool file_write(const std::string& file, const std::string& text);
 
 std::string dir_cat(const std::string& A, const std::string& B);
 std::string dir_cwd();

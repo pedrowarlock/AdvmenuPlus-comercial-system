@@ -55,7 +55,9 @@ struct os_context {
 	STICKYKEYS g_StartupStickyKeys;
 	TOGGLEKEYS g_StartupToggleKeys;
 	FILTERKEYS g_StartupFilterKeys;
-
+	BOOL hide_desktop; /**< Si el escritorio esta oculto o no. */
+	DWORD current_colors[1]; /**< Color actual del fondo del escritorio. */
+	int current_taskbar_style; /**< Estilo actual de la barra de tareas. */
 };
 
 static struct os_context OS;
@@ -124,7 +126,7 @@ void os_internal_ignore_hot_key(void)
 	/* keyboard hook to disable win keys */
 	if (!OS.g_hKeyboardHook) {
 		log_std(("os: SetWindowsHookEx()\n"));
-		OS.g_hKeyboardHook = SetWindowsHookEx(WH_KEYBOARD_LL,  windows_hook_winproc, GetModuleHandle(0), 0);
+		OS.g_hKeyboardHook = SetWindowsHookEx(WH_KEYBOARD_LL, windows_hook_winproc, GetModuleHandle(0), 0);
 		if (!OS.g_hKeyboardHook) {
 			log_std(("os: SetWindowsHookEx() failed\n"));
 		}
@@ -180,9 +182,8 @@ void os_internal_restore_hot_key(void)
 }
 
 /***************************************************************************/
-/* splash */
+/* Splash */
 
-#if defined(ADV_MENU)
 struct context_struct {
 	HWND m_hwnd;
 	DWORD m_dwWidth;
@@ -198,9 +199,9 @@ static LRESULT windows_splash_paint(HWND hwnd)
 {
 	int r;
 	unsigned scanline;
-	unsigned char* splash_ptr;
-	unsigned char* alpha_ptr;
-	unsigned char* screen_ptr;
+	unsigned char* splash_ptr = 0;
+	unsigned char* alpha_ptr = 0;
+	unsigned char* screen_ptr = 0;
 	unsigned x, y;
 	BITMAPINFOHEADER bi;
 
@@ -229,11 +230,13 @@ static LRESULT windows_splash_paint(HWND hwnd)
 	if (!r)
 		return -1;
 
-	r = GetDIBits(desktop_dc, SPLASH.m_hAlphaBitmap, 0, SPLASH.m_dwHeight, NULL, (BITMAPINFO*)&bi, DIB_RGB_COLORS);
-	alpha_ptr = (unsigned char*)GlobalAlloc(GMEM_FIXED, bi.biSizeImage);
-	r = GetDIBits(desktop_dc, SPLASH.m_hAlphaBitmap, 0, SPLASH.m_dwHeight, alpha_ptr, (BITMAPINFO*)&bi, DIB_RGB_COLORS); 
-	if (!r)
-		return -1;
+	if (SPLASH.m_hAlphaBitmap && !OS.hide_desktop) {
+		r = GetDIBits(desktop_dc, SPLASH.m_hAlphaBitmap, 0, SPLASH.m_dwHeight, NULL, (BITMAPINFO*)&bi, DIB_RGB_COLORS);
+		alpha_ptr = (unsigned char*)GlobalAlloc(GMEM_FIXED, bi.biSizeImage);
+		r = GetDIBits(desktop_dc, SPLASH.m_hAlphaBitmap, 0, SPLASH.m_dwHeight, alpha_ptr, (BITMAPINFO*)&bi, DIB_RGB_COLORS); 
+		if (!r)
+			return -1;
+	}
 
 	r = GetDIBits(desktop_dc, screen_bitmap, 0, SPLASH.m_dwHeight, NULL, (BITMAPINFO*)&bi, DIB_RGB_COLORS);
 	screen_ptr = (unsigned char*)GlobalAlloc(GMEM_FIXED, bi.biSizeImage);
@@ -253,7 +256,9 @@ static LRESULT windows_splash_paint(HWND hwnd)
 		unsigned char* screen_i = screen_ptr + scanline * y;
 		
 		for(x=0;x<SPLASH.m_dwWidth;++x) {
-			unsigned f = alpha_i[0];
+			unsigned f = 255;
+			if (SPLASH.m_hAlphaBitmap && !OS.hide_desktop)
+				f = alpha_i[0];
 			if (f == 0) {
 				/* Nothing */
 			} else if (f == 255) {
@@ -320,10 +325,10 @@ static LRESULT CALLBACK windows_splash_windproc(HWND hwnd, UINT uMsg, WPARAM wPa
 {
 	if (uMsg == WM_PAINT)
 		return windows_splash_paint(hwnd);
-	return DefWindowProc(hwnd, uMsg, wParam, lParam) ;
+	return DefWindowProc(hwnd, uMsg, wParam, lParam);
 }
 
-static void windows_splash_start(void)
+static void windows_splash_start(const char* _path_splash)
 {
 	DWORD nScrWidth;
 	DWORD nScrHeight;
@@ -331,20 +336,23 @@ static void windows_splash_start(void)
 	SPLASH.m_hwnd = 0;
 	SPLASH.m_lpszClassName = TEXT("SPLASH");
 
-#if defined(ADV_EMU)
-	SPLASH.m_hSplashBitmap = LoadBitmap(GetModuleHandle(NULL), MAKEINTRESOURCE(IDB_SPLASH));
-#else
-	SPLASH.m_hSplashBitmap = LoadBitmap(GetModuleHandle(NULL), MAKEINTRESOURCE(IDB_SPLASH_MENU));
-#endif
-	if (!SPLASH.m_hSplashBitmap)
-		return;
+	if (sglob(_path_splash, "default")) {
+		SPLASH.m_hSplashBitmap = LoadBitmap(GetModuleHandle(NULL), MAKEINTRESOURCE(IDB_SPLASH_MENU));
+		SPLASH.m_hAlphaBitmap = LoadBitmap(GetModuleHandle(NULL), MAKEINTRESOURCE(IDB_ALPHA_MENU));
+	} else {
+		char path_alpha[255];
+		const char* path_splash = strtok(strdup(_path_splash), "\"");
 
-#if defined(ADV_EMU)
-	SPLASH.m_hAlphaBitmap = LoadBitmap(GetModuleHandle(NULL), MAKEINTRESOURCE(IDB_ALPHA));
-#else
-	SPLASH.m_hAlphaBitmap = LoadBitmap(GetModuleHandle(NULL), MAKEINTRESOURCE(IDB_ALPHA_MENU));
-#endif
-	if (!SPLASH.m_hAlphaBitmap)
+		sncpy(path_alpha, strlen(path_splash)-3, path_splash);
+		sncat(path_alpha, sizeof(path_alpha), "_alpha.bmp");
+
+		SPLASH.m_hSplashBitmap = LoadImage(NULL,path_splash,IMAGE_BITMAP,0,0,LR_LOADFROMFILE | LR_CREATEDIBSECTION | LR_DEFAULTSIZE);
+		SPLASH.m_hAlphaBitmap = LoadImage(NULL,path_alpha,IMAGE_BITMAP,0,0,LR_LOADFROMFILE | LR_CREATEDIBSECTION | LR_DEFAULTSIZE);
+
+		log_std(("os_splash: Splash = %s ; Alpha = %s\n", path_splash, path_alpha));
+	}
+
+	if (!SPLASH.m_hSplashBitmap)
 		return;
 
 	int nRetValue;
@@ -382,7 +390,7 @@ static void windows_splash_start(void)
 	if (!SPLASH.m_hwnd)
 		return;
 
-	ShowWindow(SPLASH.m_hwnd, SW_SHOW) ;
+	ShowWindow(SPLASH.m_hwnd, SW_SHOW);
 	UpdateWindow(SPLASH.m_hwnd);
 }
 
@@ -395,19 +403,169 @@ void windows_splash_stop(void)
 		SPLASH.m_hwnd = 0;
 	}
 }
-#else
-static void windows_splash_start(void)
-{
-}
-
-static void windows_splash_stop(void)
-{
-}
-#endif
 
 void os_fire(void)
 {
 	windows_splash_stop();
+}
+
+/***************************************************************************/
+/* Desktop */
+
+static void windows_desktop_hide(void)
+{
+	OS.hide_desktop = TRUE;
+	
+	// ------------------------------ Cursor --------------------------------
+	SetSystemCursor(LoadCursor(GetModuleHandle(NULL), MAKEINTRESOURCE(IDB_CURSOR_MENU)), OCR_NORMAL);
+	SetSystemCursor(LoadCursor(GetModuleHandle(NULL), MAKEINTRESOURCE(IDB_CURSOR_MENU)), OCR_APPSTARTING);
+	SetSystemCursor(LoadCursor(GetModuleHandle(NULL), MAKEINTRESOURCE(IDB_CURSOR_MENU)), OCR_WAIT);
+	SetSystemCursor(LoadCursor(GetModuleHandle(NULL), MAKEINTRESOURCE(IDB_CURSOR_MENU)), OCR_ICON);
+	SetSystemCursor(LoadCursor(GetModuleHandle(NULL), MAKEINTRESOURCE(IDB_CURSOR_MENU)), 32649); // OCR_HAND
+	SetSystemCursor(LoadCursor(GetModuleHandle(NULL), MAKEINTRESOURCE(IDB_CURSOR_MENU)), OCR_NO);
+
+	// ------------- Ventanas, Barra de tareas y Boton de Inicio ------------
+	HWND hShellTraywnd = FindWindow("Shell_TrayWnd", NULL);
+	if (hShellTraywnd) {
+		// Minimized all window(s)
+		SendMessage(hShellTraywnd, WM_COMMAND, 419, 0); // MIN_ALL = 419
+		
+		// Hide TaskBar
+		APPBARDATA ABData;
+		ABData.cbSize = sizeof(ABData);
+		OS.current_taskbar_style = SHAppBarMessage(0x04, &ABData); // ABM_GETSTATE = 0x04;
+		ABData.lParam = 0x02; // ABS_ALWAYSONTOP = 0x02
+		SHAppBarMessage(0x0a, &ABData); // ABM_SETSTATE = 0x0a
+		ShowWindow(hShellTraywnd, SW_HIDE);
+
+		// Hide Start Button (windows7 ...)
+		HWND hStartButtonWnd = FindWindowEx(hShellTraywnd, 0, "Button", NULL);
+		if (!hStartButtonWnd)
+			hStartButtonWnd = FindWindowEx(GetDesktopWindow(), 0, "Button", NULL);
+		
+		if (hStartButtonWnd) ShowWindow(hStartButtonWnd, SW_HIDE);
+	}
+	
+	// ---------------------------- Desktop Color ---------------------------
+	int aElements[1] = {COLOR_BACKGROUND};
+	OS.current_colors[0] = GetSysColor(aElements[0]);
+	DWORD blackColors[1] = {RGB(0,0,0)};
+	SetSysColors(1, aElements, blackColors);
+
+	// ------------------------------ WallPaper -----------------------------
+	SystemParametersInfo(SPI_SETDESKWALLPAPER, 0, "", 0);
+
+	// -------------------------- Desktop Icons -----------------------------
+	HWND hProgmanWnd = FindWindow("Progman", NULL);
+	HWND hShellViewWnd = FindWindowEx(hProgmanWnd, 0, "SHELLDLL_DefView", NULL);
+
+	if(!hShellViewWnd) {
+		HWND hWorkerW = NULL;
+		HWND hDesktopWnd = GetDesktopWindow();
+		int i = 0;
+		do {
+			hWorkerW = FindWindowEx(hDesktopWnd, hWorkerW, "WorkerW", NULL);
+			hShellViewWnd = FindWindowEx(hWorkerW, 0, "SHELLDLL_DefView", NULL);
+			i++;
+		} while (hShellViewWnd == 0 && hWorkerW != NULL && i < 50);
+	}
+	
+	if(hShellViewWnd) {
+		HWND hSysViewWnd = FindWindowEx(hShellViewWnd, 0, "SysListView32", NULL);
+		if (hSysViewWnd) ShowWindow(hSysViewWnd, SW_HIDE);
+	}
+	
+	Sleep(100);
+}
+
+static void windows_desktop_show(void)
+{
+	// -------------------------- Desktop Icons -----------------------------
+	HWND hProgmanWnd = FindWindow("Progman", NULL);
+	HWND hShellViewWnd = FindWindowEx(hProgmanWnd, 0, "SHELLDLL_DefView", NULL);
+
+	if(!hShellViewWnd) {
+		HWND hWorkerW = NULL;
+		HWND hDesktopWnd = GetDesktopWindow();
+		int i = 0;
+		do {
+			hWorkerW = FindWindowEx(hDesktopWnd, hWorkerW, "WorkerW", NULL);
+			hShellViewWnd = FindWindowEx(hWorkerW, 0, "SHELLDLL_DefView", NULL);
+			i++;
+		} while (hShellViewWnd == 0 && hWorkerW != NULL && i < 50);
+	}
+	
+	if(hShellViewWnd) {
+		HWND hSysViewWnd = FindWindowEx(hShellViewWnd, 0, "SysListView32", NULL);
+		if (hSysViewWnd) ShowWindow(hSysViewWnd, SW_SHOWNOACTIVATE);
+	}
+
+	// ------------------------------ WallPaper -----------------------------
+	SystemParametersInfo(SPI_SETDESKWALLPAPER, 0, NULL, 0);
+
+	// ---------------------------- Desktop Color ---------------------------
+	int aElements[1] = {COLOR_BACKGROUND};
+	SetSysColors(1, aElements, OS.current_colors);
+	
+	// ------------- Ventanas, Barra de tareas y Boton de Inicio ------------
+	HWND hShellTraywnd = FindWindow("Shell_TrayWnd", NULL);
+	if (hShellTraywnd) {
+		// Un-minized all window(s)
+		SendMessage(hShellTraywnd, WM_COMMAND, 416, 0); // MIN_ALL_UNDO = 416
+
+		// Show TaskBar
+		APPBARDATA ABData;
+		ABData.cbSize = sizeof(ABData);
+		SHAppBarMessage(0x04, &ABData); // ABM_GETSTATE = 0x04;
+		ABData.lParam = OS.current_taskbar_style; // ABS_ALWAYSONTOP = 0x02
+		SHAppBarMessage(0x0a, &ABData); // ABM_SETSTATE = 0x0a
+		ShowWindow(hShellTraywnd, SW_SHOW); // Show TaskBar
+
+		// Show StartButton (windows7 ...)
+		HWND hStartButtonWnd = FindWindowEx(hShellTraywnd, 0, "Button", NULL);
+		if (!hStartButtonWnd)
+			hStartButtonWnd = FindWindowEx(GetDesktopWindow(), 0, "Button", NULL);
+		if (hStartButtonWnd) ShowWindow(hStartButtonWnd, SW_SHOW);
+	}
+
+	// ------------------------------ Cursor --------------------------------
+	SystemParametersInfo(SPI_SETCURSORS, 0, NULL, 0);
+	
+}
+
+/***************************************************************************/
+/* Desktop & Splash */
+
+void os_desktopsplash_reg(adv_conf* context)
+{
+	conf_string_register_default(context, "misc_hidedesktop", "yes");
+	conf_string_register_default(context, "misc_splash", "default");
+}
+
+int os_desktopsplash_load(adv_conf* context)
+{
+	// -------- HIDE DESKTOP --------
+	OS.hide_desktop = FALSE;
+	const char* hidedesktop = conf_string_get_default(context, "misc_hidedesktop");
+	int video_output = conf_int_get_default(context, "device_video_output");
+
+	log_std(("os: HideDesktop = %s\n", hidedesktop));
+
+	//video_output => auto (-1); fullscreen (0); window (1); overlay (2); default (1)
+	if (strcmp(hidedesktop, "yes") == 0 && (video_output == 0 || video_output == 2))
+		windows_desktop_hide();
+
+	// -------- SPLASH --------
+	const char* path_splash = file_config_file_home(conf_string_get_default(context, "misc_splash"));
+
+	log_std(("os: Splash = %s\n", path_splash));
+
+	if (strcmp(path_splash, "none") == 0 || strlen(path_splash) < 4)
+		return 0;
+
+	windows_splash_start(path_splash);  //WARLOCK - REMOVIDO LOGO MEGAMAN
+
+	return 0;
 }
 
 /***************************************************************************/
@@ -422,6 +580,7 @@ int os_init(adv_conf* context)
 
 void os_done(void)
 {
+	if (OS.hide_desktop) windows_desktop_show();
 }
 
 static void os_wait(void)
@@ -725,7 +884,6 @@ err:
 int main(int argc, char* argv[])
 {
 	windows_save_hot_key();
-	windows_splash_start();
 
 	if (target_init() != 0)
 		return EXIT_FAILURE;

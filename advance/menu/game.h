@@ -59,9 +59,21 @@ typedef std::list<std::string> machinedevice_ext_container;
 struct machinedevice {
 	machinedevice_ext_container ext_bag; ///< List of extension of the device.
 	std::string name; ///< Name of the device option.
+	std::string brief;
 };
 
 typedef std::list<machinedevice> machinedevice_container;
+
+// ------------------------------------------------------------------------
+// Softwarelist
+
+struct softwarelist {
+	std::string name;
+	std::string status;
+	std::string filter;
+};
+
+typedef std::list<softwarelist> softwarelist_container;
 
 // ------------------------------------------------------------------------
 // Game
@@ -84,8 +96,7 @@ class game {
 	static const unsigned flag_user_description_set = 0x4;
 	static const unsigned flag_user_type_set = 0x8;
 	static const unsigned flag_software = 0x20;
-	static const unsigned flag_tree_present = 0x40;
-
+	
 	friend class game_set;
 
 	mutable unsigned flag;
@@ -122,6 +133,7 @@ class game {
 	mutable const game* parent; // parent
 
 	mutable machinedevice_container machinedevice_bag; //< Set of devices supported (MESS)
+	mutable softwarelist_container softwarelist_bag; //< Set of softwarelist (MESS)
 
 	// path of available images, =="" if none
 	mutable resource snap_path;
@@ -145,7 +157,8 @@ public:
 	~game();
 
 	static const unsigned flag_user = 0x100;
-
+	static const unsigned flag_tree_present = 0x40;
+	
 	void flag_set(bool value, unsigned mask) const {
 		if (value)
 			flag |= mask;
@@ -255,6 +268,7 @@ public:
 
 	const category* type_derived_get() const;
 	std::string name_without_emulator_get() const;
+	std::string name_hash_get() const;
 
 	pgame_container& clone_bag_get() const { return clone_bag; }
 	void clone_bag_erase() const { clone_bag.clear(); }
@@ -264,6 +278,7 @@ public:
 	const game& clone_best_get() const;
 
 	machinedevice_container& machinedevice_bag_get() const { return machinedevice_bag; }
+	softwarelist_container& softwarelist_bag_get() const { return softwarelist_bag; }//
 
 	bool present_get() const {
 		return size_get() == 0 || rom_zip_set_get().size() > 0;
@@ -306,6 +321,8 @@ public:
 	bool preview_zip_set(const std::string& zip, const std::string& emulator_name, void (game::*preview_set)(const resource& s) const, const std::string& ext0, const std::string& ext1);
 	bool preview_dir_set(const std::string& dir, const std::string& emulator_name, void (game::*preview_set)(const resource& s) const, const std::string& ext0, const std::string& ext1);
 	bool preview_list_set(const std::string& list, const std::string& emulator_name, void (game::*preview_set)(const resource& s) const, const std::string& ext0, const std::string& ext1);
+	
+	bool preview_mess_list_set(const std::string& list, const std::string& emulator_name, void (game::*preview_set)(const resource& s) const, const std::string& ext0, const std::string& ext1);//
 
 	bool preview_software_dir_set(const std::string& dir, const std::string& emulator_name, void (game::*preview_set)(const resource& s) const, const std::string& ext0, const std::string& ext1);
 	bool preview_software_list_set(const std::string& list, const std::string& emulator_name, void (game::*preview_set)(const resource& s) const, const std::string& ext0, const std::string& ext1);

@@ -421,6 +421,18 @@ void os_fire(void)
 }
 
 /***************************************************************************/
+/* Hide Desktop & Splash */
+
+void os_desktopsplash_reg(adv_conf* context)
+{
+}
+
+int os_desktopsplash_load(adv_conf* context)
+{
+	return 0;
+}
+
+/***************************************************************************/
 /* Signal */
 
 int os_is_quit(void)

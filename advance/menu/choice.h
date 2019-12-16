@@ -54,7 +54,7 @@ class choice {
 	tristate_t tristate;
 	choice_data association;
 	bool active;
-
+	bool line_separator; // si tras la opcion pinta una linea separadora
 public:
 	choice(const std::string& Adesc, int Avalue, bool Aactive = true);
 	choice(const std::string& Adesc, void* Aptr, bool Aactive = true);
@@ -74,15 +74,20 @@ public:
 
 	int value_get() const { return association.value; }
 	void* ptr_get() const { return association.ptr; }
+
+	void line_separator_set() { line_separator = true; }
+	bool line_separator_get() const { return line_separator; }
 };
 
 typedef std::vector<choice> choice_container;
 
 class choice_bag : public choice_container {
-	void draw(const std::string& title, int x, int y, int dx, int base, int rel, int rows);
+	void draw(const std::string& title, int x, int y, int dx, int base, int rel, int rows, int separators);
 public:
 	int run(const std::string& title, int x, int y, int dx, choice_container::iterator& pos);
 	int favorites_run(const std::string& title, int x, int y, int dx, choice_container::iterator& pos);
+
+	void	insert_line();
 	
 	choice_container::iterator find_by_value(int value);
 	choice_container::iterator find_by_desc(const std::string& desc);
@@ -92,6 +97,5 @@ void menu_pos(int pos, int& pos_base, int& pos_rel, int pos_rel_max, int pos_bas
 int menu_key(int key, int& pos_base, int& pos_rel, int pos_rel_max, int pos_base_upper, int coln, int pos_max);
 
 int menu_key_custom(int key, int& pos_base, int& pos_rel, int pos_rel_max, int pos_base_upper, int coln, int pos_max);
-
 
 #endif

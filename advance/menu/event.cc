@@ -28,7 +28,7 @@
 #include "target.h"
 #include "keydrv.h"
 #include "joydrv.h"
-#include <windows.h> /*warlock*/
+
 #include <deque>
 
 using namespace std;
@@ -91,6 +91,8 @@ static struct event_item EVENT_TAB[] = {
 {"mute", EVENT_MUTE, { KEYB_PERIOD_PAD, KEYB_MAX } },
 {"setcoin", EVENT_SETCOIN, { KEYB_F11, OP_OR, JOYB_1_7, KEYB_MAX } },  //warlock Set coin
 {"escemule", EVENT_ESCEMULE, { KEYB_LSHIFT, OP_OR, JOYB_1_8, KEYB_MAX } },  //Sair do emulador selecionar
+//ves
+{"mameinfo", EVENT_MINFO, { KEYB_F11, KEYB_MAX } },
 { 0, 0, { 0 } }
 };
 

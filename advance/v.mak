@@ -5,6 +5,12 @@ VCFLAGS += \
 	-I$(srcdir)/advance/lib \
 	-I$(srcdir)/advance/blit \
 	-DUSE_BLIT_TINY
+
+
+
+
+
+
 VOBJS += \
 	$(VOBJ)/lib/portable.o \
 	$(VOBJ)/lib/snstring.o \

@@ -84,6 +84,20 @@ void os_fire(void);
 int os_main(int argc, char* argv[]);
 
 /***************************************************************************/
+/* Hide Desktop & Splash */
+
+/**
+ * Registra las opciones de HideDesktop y Splash.
+ */
+void os_desktopsplash_reg(adv_conf* context);
+	
+/**
+ * Load HideDesktop y Splash.
+ */
+int os_desktopsplash_load(adv_conf* context);
+
+
+/***************************************************************************/
 /* Signal */
 
 /**

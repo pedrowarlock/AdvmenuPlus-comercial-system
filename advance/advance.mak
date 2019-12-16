@@ -39,7 +39,7 @@ endif
 endif
 ifneq ($(wildcard $(srcdir)/advance/menu.mak),)
 INSTALL_DIRS += $(MENUOBJ)
-INSTALL_BINFILES += $(MENUOBJ)/advmenup$(EXE)
+INSTALL_BINFILES += $(MENUOBJ)/advmenu$(EXE)
 INSTALL_MANFILES += $(DOCOBJ)/advmenu.1
 endif
 ifeq ($(CONF_LIB_DIRECT),yes)
@@ -83,7 +83,7 @@ WEB_DOCFILES += $(subst $(srcdir)/doc/,$(DOCOBJ)/,$(subst .d,.hh,$(wildcard $(sr
 
 all: $(INSTALL_DIRS) $(INSTALL_BINFILES) $(INSTALL_DOCFILES) $(INSTALL_MANFILES) $(INSTALL_DATAFILES)
 emu: $(OBJ) $(OBJ)/$(EMUNAME)$(EXE)
-menu: $(MENUOBJ) $(MENUOBJ)/advmenup$(EXE)
+menu: $(MENUOBJ) $(MENUOBJ)/advmenu$(EXE)
 cfg: $(CFGOBJ) $(CFGOBJ)/advcfg$(EXE)
 v: $(VOBJ) $(VOBJ)/advv$(EXE)
 s: $(SOBJ) $(SOBJ)/advs$(EXE)

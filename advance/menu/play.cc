@@ -27,7 +27,8 @@
 
 #include <iostream>
 #include <iomanip>
-
+#include <windows.h>
+#include <string>
 using namespace std;
 
 // --------------------------------------------------------------------------
@@ -237,6 +238,19 @@ void play_foreground_effect_end(const resource& s)
 		play_file(CHANNEL_FOREGROUND, s, false);
 	}
 }
+
+
+void play_foreground_fliper_key(const resource& s)
+{
+	string recebe = s.path_get();
+
+	if (s.path_get()=="default") {
+		play_memory(CHANNEL_FOREGROUND, B0_DATA, B0_DATA+B0_DATA_SIZE, false);
+	} else if (s.path_get()!="none") {
+		sndPlaySoundA(recebe.c_str(), SND_ASYNC || SND_NODEFAULT);
+	}	
+}
+
 
 void play_foreground_effect_key(const resource& s)
 {

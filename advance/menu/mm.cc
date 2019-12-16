@@ -16,10 +16,9 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
- */   
+ */
 
 #include "portable.h"
-
 #include "mconfig.h"
 #include "menu.h"
 #include "submenu.h"
@@ -27,44 +26,73 @@
 #include "play.h"
 #include "advance.h"
 
-#include <string>
-#include <iostream>
-#include <windows.h> //warlock
-
+#include <sstream>
+#include <iomanip>
+#include <algorithm>
+#include <windows.h> 
+#include <string>  
+#include <iostream> 
+#include <fstream> 
 
 using namespace std;
 
-int ValorDaFicha=0; //warlock
-int CreditoPorFicha=0; //warlock
-int bloqueado=0; //warlock
- 
+int ValorDaFicha=0; 
+int CreditoPorFicha=0;
+int bloqueado=0; 
+string telefone;
+
+string MensagemErro;
+std::string KeyRegis = "TTWCCWEROOOAADCCEIJIEVEIWEPYREYWUEIYFHDFHKMEBBBEYYVVIEPWERTY";
+
 // --------------------------------------------------------------------------
 // Run
-
 int run_sub(config_state& rs, bool silent)
 {
+
+telefone.clear(); 
+telefone  = "T", telefone += "e", telefone += "l: ",	telefone += "(", telefone += "2", telefone += "1", telefone += ")",	telefone += " ";
+telefone += "9", telefone += "6", telefone += "5", telefone += "4",	telefone += "-", telefone += "6", telefone += "5";
+telefone += "0", telefone += "9", telefone += "4";
+
+MensagemErro.clear(); 
+MensagemErro = "Erro! Abra o Menu apartir do programa Arcade.exe\n";
+MensagemErro += "Qualquer duvida, entre em contato com o fornecedor:\n";
+MensagemErro += telefone;
 	
-	
-	//Pegar o caminho completo do programa
-	char pBuf[256]; 
-	size_t len = sizeof(pBuf);
-	int bytes = GetModuleFileName(NULL, pBuf, len);
-	
-	std::string teste = pBuf;
-	string newstring = teste.substr(0, 3);
-	newstring += "qrcdriver.d";
-	
-	FILE *pFile;
-	pFile = fopen(newstring.c_str(), "r");
-	if (pFile==NULL)
-	{
-	  fclose (pFile);
-	  return EVENT_ESC;
-	
-	}
-	
-	
-	
+//-----------------------------------------
+//VERIFICA SE REGISTRO EXISTE
+HKEY keyB;
+if (RegOpenKey(HKEY_CURRENT_USER, TEXT("SOFTWARE\\Wdiversoes\\ADVMENU"), &keyB) != ERROR_SUCCESS){
+	target_err(MensagemErro.c_str());
+	return EVENT_ESC;
+}
+
+if (RegOpenKey(HKEY_CURRENT_USER, TEXT("Identities\\{33222444-AC4A-5555-AAQA-33322-AAP43}"), &keyB) != ERROR_SUCCESS){
+	target_err(MensagemErro.c_str());
+	return EVENT_ESC;
+}
+//-----------------------------------------
+//Pegar o caminho completo do programa
+char pBuf[256]; 
+size_t len = sizeof(pBuf);
+int bytes = GetModuleFileName(NULL, pBuf, len);
+
+std::string teste = pBuf;
+string newstring = teste.substr(0, 3);
+newstring += "qrcdriver.d";
+
+FILE *pFile;
+pFile = fopen(newstring.c_str(), "r");
+if (pFile==NULL)
+{
+  fclose (pFile);
+	target_err(MensagemErro.c_str());
+	return EVENT_ESC;
+}
+//-----------------------------------------
+
+	log_std(("menu: int_enable call\n"));
+
 	if (!int_enable(-1, -1, "none", rs.video_orientation_effective)) {
 		return EVENT_ESC;
 	}
@@ -79,6 +107,7 @@ int run_sub(config_state& rs, bool silent)
 		emulator* emu;
 			
 		key = run_menu(rs, (rs.video_orientation_effective & ADV_ORIENTATION_FLIP_XY) != 0, silent);
+
 		// don't replay the sound and clip
 		silent = true;
 
@@ -86,87 +115,62 @@ int run_sub(config_state& rs, bool silent)
 			key = EVENT_MENU;
 
 		if (!rs.lock_effective) {
-			
 			if (key == EVENT_MENU) {
-				// replay the sound and clip
-				silent = false;
+				silent = true;
 				key = run_submenu(rs);
 			}
+		}
 
-			switch (key) {
-			
-			case EVENT_CLONE :
-			// replay the sound and clip
-			silent = false;
-			run_clone(rs);
-			if (rs.current_clone) {
-				if (rs.menu_systems->state_get()) { // MENU SYSTEMS
-					for(pemulator_container::const_iterator i=rs.emu_active.begin();i!=rs.emu_active.end();++i) {
-						if(emu_tolower((*i)->user_name_get()) == rs.current_clone->name_without_emulator_get()) {
-							emulator_container c;
-							c.insert(c.end(), (*i)->user_name_get());
-							rs.include_emu_set(c);
-							break;
-						}
-					}
-				} else {
-					done = true;
-					is_run = true;
-				}
-			}
-			break;
-			
+		switch (key) {
 			case EVENT_HELP :
-				// replay the sound and clip
 				silent = false;
 				run_help(rs);
 				break;
+			case EVENT_MINFO :
+				silent = false;
+				run_subInfohistory(rs);
+				break;
 			case EVENT_FAVORITES_NEXT :
-				// replay the sound and clip
 				silent = false;
 				run_favorites_next(rs);
 				break;
 			case EVENT_EMU_NEXT :
-				// replay the sound and clip
 				silent = false;
 				run_emu_next(rs);
 				break;
 			case EVENT_EMU_PRE :
-				// replay the sound and clip
 				silent = false;
 				run_emu_pre(rs);
 				break;
 			case EVENT_TYPE :
-				// replay the sound and clip
 				silent = false;
 				run_type_next(rs);
 				break;
 			case EVENT_ATTRIB :
-				// replay the sound and clip
 				silent = false;
 				emu = run_emu_select(rs);
 				if (emu)
 					emu->attrib_run(SECOND_CHOICE_X, SECOND_CHOICE_Y);
 				break;
 			case EVENT_COMMAND :
+				silent = false;
 				run_command(rs);
 				break;
 			case EVENT_SORT :
-				// replay the sound and clip
 				silent = false;
 				run_sort(rs);
 				break;
 			case EVENT_SETFAVORITES :
-				// replay the sound and clip
 				silent = false;
 				run_favorites_move(rs);
 				break;
 			case EVENT_SETTYPE :
-				// replay the sound and clip
 				silent = false;
 				run_type_move(rs);
 				break;
+
 			case EVENT_ESCEMULE:
+			
 				silent = false;
 				// MENU SYSTEMS: Al salir de un emulador carga el Menu Systems (si esta activado)
 				if (rs.menu_systems_activated && !rs.menu_systems->state_get()) {
@@ -189,66 +193,88 @@ int run_sub(config_state& rs, bool silent)
 					rs.include_emu_set(c);
 					key = EVENT_NONE;
 					break;
-				}
-				*/
+				} */
 				// Muestra ventana de confirmacion de salida (Security Exit)
-				if(rs.security_exit && !run_exit(rs))
-					break;
-				//ShellExecuteA(0, "open", "Arcade.exe", " close", ".\\", SW_HIDE); //WARLOCK
+				if(rs.security_exit) {
+					key = run_exit(rs);
+					if (key == EVENT_NONE)
+						break;
+				}
+			case EVENT_ESC_FORCE :
+			case EVENT_OFF_FORCE :
 				disable_fonts();
 			case EVENT_ROTATE :
 				done = true;
 				break;
-			}
-		}
-
-		switch (key) {
-		case EVENT_LOCK :
-			rs.lock_effective = !rs.lock_effective;
-			break;
-		case EVENT_IDLE_0 :
-			if (rs.current_game) {
-				rs.current_clone = &rs.current_game->clone_best_get();
-				done = true;
-				is_run = true;
-			}
-			break;
-		
-			
-		case EVENT_SETCOIN : //warlock Set coin
+			case EVENT_LOCK :
+				rs.lock_effective = !rs.lock_effective;
+				break;
+			case EVENT_IDLE_0 :
+				if (rs.current_game) {
+					rs.current_clone = &rs.current_game->clone_best_get();
+					done = true;
+					is_run = true;
+				}
+				break;
+			case EVENT_NONE :
+				silent = false;
+				//done = true;
+				break;
+			case EVENT_SETCOIN : //warlock Set coin
 					silent = false;
 					{
 					int RetFichas=0,Fichas=0, Contador=0;
 					char bufferFicha[100];
 					char bufferContador[100];
-					RetFichas = GetPrivateProfileStringA("FICHEIRO",    "FICHAS"   ,"0", bufferFicha, 100, ".\\advmenu.ini");
+					char PegaCreditoPF[100];
+					char PegaFicha[100];
+					char PegaBloqueado[100];
 					
-					if ( RetFichas && bloqueado >=1 ){
+					//MessageBox(NULL,rs.sound_foreground_coin.c_str(),"",MB_OK|MB_SYSTEMMODAL);
+										
+					//PEGA O VALOR DA FICHA
+					GetPrivateProfileStringA("CONFIGURACAO","TEMPOPORFICHA","0",PegaFicha, 100, ".\\advmenu.ini");
+					ValorDaFicha=atoi(PegaFicha);
+					
+					//PEGA O CREDITO POR FICHA
+					GetPrivateProfileStringA("CONFIGURACAO","CREDITOPF", "1", PegaCreditoPF, 100, ".\\advmenu.ini");
+					CreditoPorFicha=atoi(PegaCreditoPF);
+					
+					//PEGA CONTADOR GERAL
 					GetPrivateProfileStringA("FICHEIRO",    "CONTADOR" ,"0", bufferContador, 100, ".\\advmenu.ini");
-					Fichas   = atoi(bufferFicha);
 					Contador = atoi(bufferContador);
-					Contador+=1;
 					
-					Fichas+=ValorDaFicha*CreditoPorFicha;    
-					sprintf(bufferFicha,"%d",Fichas);
+					//PEGA A QUANTIDADE DE FICHAS
+					RetFichas = GetPrivateProfileStringA("FICHEIRO","FICHAS","0", bufferFicha, 100, ".\\advmenu.ini");
+					Fichas   = atoi(bufferFicha);
+					
+					//VERIFICA SE TA BLOQUEADO
+					GetPrivateProfileStringA("CONFIGURACAO","BLOQUEADO", "0", PegaBloqueado, 100, ".\\advmenu.ini");
+					bloqueado=atoi(PegaBloqueado);
+		
+					if ( RetFichas && bloqueado >=1 ){
+						Contador+=1;
+						Fichas+=ValorDaFicha*CreditoPorFicha;    
+						sprintf(bufferFicha,"%d",Fichas);
 
-					if(Fichas !=0 ){
-							WritePrivateProfileStringA("FICHEIRO","FICHAS", bufferFicha,".\\advmenu.ini");						
-						}else{ 
-							WritePrivateProfileStringA("FICHEIRO","FICHAS", "0", ".\\advmenu.ini");
-						}
-							sprintf(bufferContador, "%d", Contador);
-							WritePrivateProfileStringA("FICHEIRO","CONTADOR", bufferContador, ".\\advmenu.ini");
-							sndPlaySoundA( ".\\auxiliar\\som\\coin.wav", SND_ASYNC || SND_NODEFAULT );
-							
+						if(Fichas !=0 ){ 
+								WritePrivateProfileStringA("FICHEIRO","FICHAS", bufferFicha,".\\advmenu.ini");						
+							}else{ 
+								WritePrivateProfileStringA("FICHEIRO","FICHAS", "0", ".\\advmenu.ini");
+							}
+								sprintf(bufferContador, "%d", Contador);
+								WritePrivateProfileStringA("FICHEIRO","CONTADOR", bufferContador, ".\\advmenu.ini");
+								
+								
+								play_foreground_fliper_key(rs.sound_foreground_coin);
+								//MessageBox(NULL,rs.sound_foreground_coin.c_str(),"",MB_OK|MB_SYSTEMMODAL);
 						}
 					}
-				break;	
-			
-		case EVENT_ENTER :
+					break;	
+			case EVENT_ENTER :
 				silent = false;
 				
-		if (rs.current_game) { 
+				if (rs.current_game) { 
 			
 				int RetFichas=0, Fichas=0; 
 				char buffer1[100];
@@ -272,9 +298,9 @@ int run_sub(config_state& rs, bool silent)
 			} 
 				
 				
-			if ( bloqueado != 0 ){ // BLOQUEADO - Se estiver bloqueado, ent„o verificar se tem fichas
+			if ( bloqueado != 0 ){ // BLOQUEADO - Se estiver bloqueado, ent√£o verificar se tem fichas
 				if ( RetFichas ){	
-					if (Fichas >= 60000 && !TipoEmu) { //Da enter no game MODO tempo mesmo atÈ com 1 minuto de tempo.
+					if (Fichas >= 60000 && !TipoEmu) { //Da enter no game MODO tempo mesmo at√© com 1 minuto de tempo.
 						if (rs.current_game) {
 							done = true;
 							is_run = true;
@@ -290,9 +316,9 @@ int run_sub(config_state& rs, bool silent)
 						break;
 					}else{
 						if ( TipoEmu ){
-							sndPlaySoundA( ".\\auxiliar\\som\\faltaficha.wav", SND_ASYNC || SND_NODEFAULT );
+							play_foreground_fliper_key(rs.sound_foreground_nocoin);
 						}else{
-							sndPlaySoundA( ".\\auxiliar\\som\\poucotempo.wav", SND_ASYNC || SND_NODEFAULT );
+							play_foreground_fliper_key(rs.sound_foreground_notime);
 						}
 					}	
 				break;	
@@ -306,10 +332,9 @@ int run_sub(config_state& rs, bool silent)
 			}
 		}
 		break; 		
-//-----------------------------------------------------------------------------------------------------------------------------------				
-			} // Fim do Switch
-		} //Fim do while
-	
+
+		}
+	}
 
 	if (is_run) {
 		assert(rs.current_game);
@@ -330,11 +355,14 @@ int run_sub(config_state& rs, bool silent)
 
 	return key;
 }
+
 int run_main(config_state& rs, bool is_first, bool silent)
 {
 	log_std(("menu: int_set call\n"));
 
-	if (!int_set(rs.video_gamma, rs.video_brightness, rs.idle_start_first, rs.idle_start_rep, rs.idle_saver_first, rs.idle_saver_rep, rs.preview_fast, rs.ui_translucency, rs.disable_special)) {
+	if (!int_set(rs.video_gamma, rs.video_brightness, rs.idle_start_first, rs.idle_start_rep, rs.idle_saver_first,
+	             rs.idle_saver_rep, rs.idle_exit_time, rs.preview_fast, rs.ui_translucency, rs.disable_special))
+	{
 		return EVENT_ESC;
 	}
 
@@ -502,7 +530,7 @@ int run_all(adv_conf* config_context, config_state& rs)
 		case EVENT_ESC_FORCE :
 		case EVENT_OFF_FORCE :
 			done = true;
-			break;
+			break; 
 		case EVENT_IDLE_0 :
 		case EVENT_SETCOIN :
 		case EVENT_ESCEMULE :
@@ -529,9 +557,9 @@ int run_all(adv_conf* config_context, config_state& rs)
 						bios = &rs.current_clone->bios_get();
 					else
 						bios = rs.current_clone;
-						rs.current_game->emulator_get()->run(*rs.current_game, bios, rs.video_orientation_effective, true, rs.difficulty_effective, rs.console_mode, play_attenuation_get(), key == EVENT_IDLE_0);
+					rs.current_game->emulator_get()->run(*rs.current_game, bios, rs.video_orientation_effective, true, rs.difficulty_effective, rs.console_mode, play_attenuation_get(), key == EVENT_IDLE_0);
 				} else {
-						rs.current_clone->emulator_get()->run(*rs.current_clone, 0, rs.video_orientation_effective, true, rs.difficulty_effective, rs.console_mode, play_attenuation_get(), key == EVENT_IDLE_0);
+					rs.current_clone->emulator_get()->run(*rs.current_clone, 0, rs.video_orientation_effective, true, rs.difficulty_effective, rs.console_mode, play_attenuation_get(), key == EVENT_IDLE_0);
 				}
 
 				// update the game info
@@ -556,7 +584,7 @@ int run_all(adv_conf* config_context, config_state& rs)
 static void version(void)
 {
 	char report_buffer[128];
-	target_out("AdvMenuPlus X (by PedroWarlock)  %s\n", ADV_VERSION);
+	target_out("AdvMenuPLUS %s\n", ADV_VERSION);
 #if defined(__GNUC__) && defined(__GNUC_MINOR__) && defined(__GNUC_PATCHLEVEL__) /* OSDEF Detect compiler version */
 #define COMPILER_RESOLVE(a) #a
 #define COMPILER(a, b, c) COMPILER_RESOLVE(a) "." COMPILER_RESOLVE(b) "." COMPILER_RESOLVE(c)
@@ -584,14 +612,14 @@ static void version(void)
 	target_out("  Data: . (current directory)\n");
 #endif
 	target_out("\n");
- 
+
 	target_out("Configuration (in priority order):\n");
-	if (file_config_file_host("Advmenu.rc") != 0)  
-		target_out("  Host configuration file (R): %s\n", file_config_file_host("Advmenu.rc"));
+	if (file_config_file_host("advmenup.rc") != 0)
+		target_out("  Host configuration file (R): %s\n", file_config_file_host("advmenup.rc"));
 	target_out("  Command line (R)\n");
-	target_out("  Home configuration file (RW): %s\n", file_config_file_home("Advmenu.rc"));
-	if (file_config_file_data("Advmenu.rc") != 0)
-		target_out("  Data configuration file (R): %s\n", file_config_file_data("Advmenu.rc"));
+	target_out("  Home configuration file (RW): %s\n", file_config_file_home("advmenup.rc"));
+	if (file_config_file_data("advmenup.rc") != 0)
+		target_out("  Data configuration file (R): %s\n", file_config_file_data("advmenup.rc"));
 }
 
 static void help(void)
@@ -717,7 +745,15 @@ static adv_conf_conv STANDARD[] = {
 { "*", "run_msg", "*", "%s", "ui_gamemsg", "%s", 0 }, /* rename */
 { "*", "run_preview", "*", "%s", "ui_game", "%s", 0 }, /* rename */
 /* 2.4.0 */
-{ "*", "ui_game", "play", "%s", "%s", "snap", 0 } /* rename */
+{ "*", "ui_game", "play", "%s", "%s", "snap", 0 }, /* rename */
+/* plus */
+{ "*", "merge", "none", "%s", "romset_type", "non-merged", 0 },
+{ "*", "merge", "differential", "%s", "romset_type", "split", 0 },
+{ "*", "merge", "parent", "%s", "romset_type", "merged", 0 },
+{ "*", "merge", "any", "%s", "romset_type", "any", 0 },
+{ "*", "merge", "disable", "%s", "romset_type", "disable", 0 },
+{ "*", "emulator_file_custom", "*", "%s", "emulator_layout", "%s", 0 },
+{ "*", "mode", "custom", "%s", "mode", "layout", 0 }
 };
 
 adv_error include_load(adv_conf* context, int priority, const char* include_spec, adv_bool ignore_unknown, adv_bool multi_line, const adv_conf_conv* conv_map, unsigned conv_mac, conf_error_callback* error, void* error_context)
@@ -784,7 +820,7 @@ void os_signal(int signum, void* info, void* context)
 
 //---------------------------------------------------------------------------
 // Lectura de archivos Layouts
-//new
+
 bool layout_read(config_state& rs, const string& custom_path)
 {	
 	if (custom_path == "")
@@ -802,7 +838,6 @@ bool layout_read(config_state& rs, const string& custom_path)
 	
 	adv_conf* custom_context;
 	const char* section_map_custom[1];
-//new
 	custom_context = conf_init();
 	config_state::conf_register_custom(custom_context);
 	section_map_custom[0] = (char*)"";
@@ -827,10 +862,11 @@ bool layouts_load(config_state& rs)
 {
 	if (!layout_read(rs, rs.menu_systems->custom_file_path_get()))
 		return false;
-//end
+	
 	for(pemulator_container::iterator j = rs.emu.begin(); j!=rs.emu.end(); j++)
 		if (!layout_read(rs, (*j)->custom_file_path_get()))
 			return false;
+	
 	return true;
 }
 
@@ -852,7 +888,7 @@ int os_main(int argc, char* argv[])
 	int key = 0;
 	const char* section_map[1];
 	char cfg_buffer[512];
-
+	
 	char PegaFicha[100]; //warlock
 	char PegaBloqueado[100];
 	char PegaCreditoPF[100];
@@ -868,8 +904,8 @@ int os_main(int argc, char* argv[])
 		target_err("Error initializing the OS support.\n");
 		goto err_conf;
 	}
-
-/*Pega o valor de cada ficha e atribui a variavel global*/ //warlock
+	
+	/*Pega o valor de cada ficha e atribui a variavel global*/ //warlock
 	RetFicha=GetPrivateProfileStringA("CONFIGURACAO","TEMPOPORFICHA","0",PegaFicha, 100, ".\\advmenu.ini");
 	if (RetFicha){
 		ValorDaFicha=atoi(PegaFicha);
@@ -878,7 +914,7 @@ int os_main(int argc, char* argv[])
 		target_err("Erro ao ler o advmenu.ini.\n");
 		ValorDaFicha=600000;
 	}
-	/*Verifica se È pra usar o bloqueio de controle caso n„o tenha ficha*/ //warlock
+	/*Verifica se √© pra usar o bloqueio de controle caso n√£o tenha ficha*/ //warlock
 	RetBlock=GetPrivateProfileStringA("CONFIGURACAO","BLOQUEADO", "0", PegaBloqueado, 100, ".\\advmenu.ini");
 	if (RetBlock){
 		bloqueado=atoi(PegaBloqueado);
@@ -896,7 +932,7 @@ int os_main(int argc, char* argv[])
 		target_err("Erro ao ler o advmenu.ini.\n");
 		CreditoPorFicha=1;
 	}
-
+	
 
 	/* include file */
 	conf_string_register_default(config_context, "include", "");
@@ -904,6 +940,7 @@ int os_main(int argc, char* argv[])
 	config_state::conf_register(config_context);
 	int_reg(config_context);
 	play_reg(config_context);
+	os_desktopsplash_reg(config_context);
 
 	if (conf_input_args_load(config_context, 3, "", &argc, argv, error_callback, 0) != 0)
 		goto err_init;
@@ -916,61 +953,46 @@ int os_main(int argc, char* argv[])
 	opt_version = false;
 	opt_help = false;
 	opt_cfg = 0;
-/* 
+	
+	telefone.clear(); 
+	telefone  = "T", telefone += "e", telefone += "l: ",	telefone += "(", telefone += "2", telefone += "1", telefone += ")",	telefone += " ";
+	telefone += "9", telefone += "6", telefone += "5", telefone += "4",	telefone += "-", telefone += "6", telefone += "5";
+	telefone += "0", telefone += "9", telefone += "4";
+	
+	MensagemErro = "Erro! Abra o Menu apartir do programa Arcade.exe\n";
+	MensagemErro += "Qualquer duvida, entre em contato com o fornecedor:\n";
+	MensagemErro += telefone;
+	
+
+	
 	for(int i=1;i<argc;++i) {
-		if (target_option_compare(argv[i], "cfg")) {
-			opt_cfg = argv[i+1];
-			++i;
-		} else if (target_option_compare(argv[i], "verbose")) {
-			opt_verbose = true;
-		} else if (target_option_compare(argv[i], "version")) {
-			opt_version = true;
-		} else if (target_option_compare(argv[i], "help")) {
-			opt_help = true;
-		} else if (target_option_compare(argv[i], "remove")) {
-			opt_remove = true;
-		} else if (target_option_compare(argv[i], "default")) {
-			opt_default = true;
-		} else if (target_option_compare(argv[i], "log")) {
-			opt_log = true;
-		} else if (target_option_compare(argv[i], "logsync")) {
-			opt_logsync = true;
-		} else {
-			target_err("Unknown option '%s'.\n", argv[i]);
-			goto err_init;
-		}
-	}
-*/	    
-	    
-		for(int i=1;i<argc;++i) {
-		if (target_option_compare(argv[i], "nfsdoknwerewotiewpvovffr")) {//Warlock   Adicionado essa linha para impedir do advmenu abrir sem linha de comando!
+		if (target_option_compare(argv[i], KeyRegis.c_str())) {	//Warlock   Adicionado essa linha para impedir do advmenu abrir sem linha de comando!
 			opt_cfg = argv[i+1];
 			++i;
 			} else {
-				
-			target_err("Erro! Abra o Menu apartir do programa Arcade.exe. Para mais informaÁıes entre em contato com o fornecedor ©WL-Diversıes.\nTelefone: (21) 96546-5094.\nEmail: Wdiversoes@gmail.com.");
-			//target_err("Unknown option '%s'.\n", argv[i]);
+				target_err(MensagemErro.c_str());
 			goto err_init;
 		} 
 	}
 
 	if (argv[2]) {      //Warlock   Adicionado essa linha para impedir do advmenu abrir sem linha de comando!
-			target_err("Erro! Abra o Menu a partir do programa Arcade.exe. Para mais informaÁıes entre em contato com o fornecedor ©WL-Diversıes.\nTelefone: (21) 96546-5094.\nEmail: Wdiversoes@gmail.com.");
+			target_err(MensagemErro.c_str());
 		goto err_init; 
 	}
+	
 	
 	
 	if (opt_cfg) {
 		sncpy(cfg_buffer, sizeof(cfg_buffer), file_config_file_home(opt_cfg));
 	} else {
-		sncpy(cfg_buffer, sizeof(cfg_buffer), file_config_file_home("Advmenu.rc"));
+		sncpy(cfg_buffer, sizeof(cfg_buffer), file_config_file_home("advmenup.rc"));
 	}
 
 	if (opt_version) {
 		version();
 		goto done_init;
 	}
-/*
+
 	if (opt_help) {
 		help();
 		goto done_init;
@@ -983,17 +1005,17 @@ int os_main(int argc, char* argv[])
 			goto err_init;
 		}
 	}
-*/
+
 	log_std(("menu: %s %s\n", __DATE__, __TIME__));
 
-	if (file_config_file_host("Advmenu.rc") != 0) {
-		if (conf_input_file_load_adv(config_context, 4, file_config_file_host("Advmenu.rc"), 0, 0, 1, STANDARD, sizeof(STANDARD)/sizeof(STANDARD[0]), error_callback, 0) != 0) {
+	if (file_config_file_host("advmenup.rc") != 0) {
+		if (conf_input_file_load_adv(config_context, 4, file_config_file_host("advmenup.rc"), 0, 0, 1, STANDARD, sizeof(STANDARD)/sizeof(STANDARD[0]), error_callback, 0) != 0) {
 			goto err_init;
 		}
 	}
 
-	if (file_config_file_data("Advmenu.rc") != 0) {
-		if (conf_input_file_load_adv(config_context, 0, file_config_file_data("Advmenu.rc"), 0, 0, 1, STANDARD, sizeof(STANDARD)/sizeof(STANDARD[0]), error_callback, 0) != 0) {
+	if (file_config_file_data("advmenup.rc") != 0) {
+		if (conf_input_file_load_adv(config_context, 0, file_config_file_data("advmenup.rc"), 0, 0, 1, STANDARD, sizeof(STANDARD)/sizeof(STANDARD[0]), error_callback, 0) != 0) {
 			goto err_init;
 		}
 	}
@@ -1042,6 +1064,11 @@ int os_main(int argc, char* argv[])
 		goto err_init;
 	}
 
+	if (os_desktopsplash_load(config_context) != 0) {
+		target_err("Error hiding the desktop or initializing the Splash.\n");
+		goto err_init;
+	}
+	
 	log_std(("menu: *_load()\n"));
 
 	if (!rs.load(config_context, opt_verbose)) {
@@ -1059,14 +1086,14 @@ int os_main(int argc, char* argv[])
 		goto err_init;
 	}
 
-	if (os_inner_init("AdvMenuPlus X (by PedroWarlock) " ADV_VERSION) != 0) {
+	if (os_inner_init("AdvMenuPlus " ADV_VERSION) != 0) {
 		target_err("Error initializing the inner OS support.\n");
 		goto err_init;
 	}
 
 	event_setup(rs.sound_foreground_key, rs.repeat, rs.repeat_rep, rs.alpha_mode);
 
-	if (!int_init(rs.video_size)) {
+	if (!int_init(rs.video_sizex, rs.video_sizey)) {
 		goto err_inner_init;
 	}
 
@@ -1122,3 +1149,5 @@ err_conf:
 	return EXIT_FAILURE;
 
 }
+
+

@@ -29,11 +29,12 @@
 
 #include "layout.h"
 #include "favlist.h"
+#include "textview.h"
 
 #include <list>
 
 #define ADV_COPY \
-	"AdvMenuPLUS - Copyright (C) 2009-2016 by daesdae\nAdvanceMENU - Copyright (C) 1999-2008 by Andrea Mazzoleni\n"
+	"AdvMenuPLUS - Copyright (C) 2009-2017 by daesdae\nAdvanceMENU - Copyright (C) 1999-2008 by Andrea Mazzoleni\n"
 
 enum clip_mode_t {
 	clip_none,
@@ -159,9 +160,13 @@ enum saver_t {
 	saver_flyer,
 	saver_cabinet,
 	saver_title,
-	saver_shutdown,
-	saver_exit,
 	saver_off
+};
+
+/// Type of idle exit.
+enum idle_exit_t {
+	idle_exit_normal,
+	idle_exit_shutdown,
 };
 
 /// Type of configuration save/restore.
@@ -222,6 +227,11 @@ class config_emulator_state {
 	bool include_type_set_effective; ///< If the type include is set.
 	category_container include_type_effective; ///< Included types.
 
+	bool merge_set_orig; ///< If the rom merge is set.
+	merge_t merge_orig; ///< Original rom merge type.
+	bool merge_set_effective; ///< If the rom merge is set.
+	merge_t merge_effective; ///< Rom merge type.
+		
 	bool resetgame_set_unique; ///< If the reset is set.
 	bool resetgame_unique; ///< Reset to text mode before running games.
 
@@ -238,6 +248,11 @@ public:
 	listpreview_t preview_get();
 	const category_container& include_type_get();
 
+	bool merge_has();
+	merge_t merge_get();
+	void merge_set(merge_t A);
+	void merge_unset();
+	
 	bool sort_has();
 	bool mode_has();
 
@@ -296,7 +311,7 @@ class config_state {
 public:
 	listsort_t sort_get();
 	listmode_t mode_get();
-	
+
 	listpreview_t preview_get();
 	const std::string& include_favorites_get() { return default_include_favorites_effective; }
 	const category_container& include_type_get();
@@ -306,6 +321,9 @@ public:
 	void sort_set(listsort_t A);
 	void mode_set(listmode_t A);
 
+	merge_t merge_get();
+	void merge_set(merge_t A);
+	
 	// REM SELECTED
 	bool rem_selected;									///< Indica si recordar el juego seleccionado
 	ppos_selected_container rem_pos;		///< Contenedor de las posiciones del juego seleccionado por pares list/emu
@@ -333,7 +351,8 @@ public:
 
 	pemulator_container emu; ///< Supported emulators set.
 	pemulator_container emu_active; ///< Active emulators, a subset of emu.
-
+	emulator* current_emu; ///< Puntero al emulador actual.
+	
 	playout_container lay_cont; ///< Lista de layouts
 
 	pfavorites_container favorites; ///< Game Lists set.
@@ -343,7 +362,9 @@ public:
 	bool lock_effective; ///< Interface locked.
 
 	// video
-	unsigned video_size; ///< Preferred video x size.
+	unsigned video_sizex; ///< Preferred video horizontal size.
+	unsigned video_sizey; ///< Preferred video vertical size.
+	
 	std::string video_font_path; ///< Font path, "auto"== default.
 	int video_fontx; ///< Font size, "-1"==auto.
 	int video_fonty; ///< Font size, "-1"==auto.
@@ -365,6 +386,11 @@ public:
 	std::string preview_default_marquee; ///< Default preview file for the specified mode.
 	std::string preview_default_title; ///< Default preview file for the specified mode.
 
+	std::string mame_history; ///< Default history file.
+	std::string mame_info; ///< Default infogames file.
+
+	std::string xml_dir; ///< Directorio de los xml o lst de los emuladores.
+		
 	clip_mode_t clip_mode; ///< Loop the play of all the game clips and sounds.
 
 	unsigned icon_space; ///< Space in pixels between icons.
@@ -383,6 +409,8 @@ public:
 	unsigned idle_saver_first; ///< Idle time before the first screensaver action (seconds).
 	unsigned idle_saver_rep; ///< Idle time before the next screensaver action (seconds).
 	saver_t idle_saver_type; ///< Screensaver type.
+	unsigned idle_exit_time; ///< Idle time before exit action (seconds).
+	idle_exit_t idle_exit_type; ///< Idle exit type.
 	unsigned repeat; // Keyboard first repeat period.
 	unsigned repeat_rep; ///< Keyboard next repeat period.
 	bool disable_special; ///< Disable special hotkeys.
@@ -392,6 +420,12 @@ public:
 	exit_t exit_mode; ///< Exit mode
 
 	// foreground sound
+	std::string sound_foreground_zgeral;
+	std::string sound_foreground_zerado;
+	std::string sound_foreground_notime;
+	std::string sound_foreground_nocoin;
+	std::string sound_foreground_coin;
+	std::string background_config_menu;
 	std::string sound_foreground_begin;
 	std::string sound_foreground_end;
 	std::string sound_foreground_key;
@@ -432,6 +466,7 @@ public:
 	unsigned ui_bottom; ///< User interface bottom border
 
 	bool favorites_filtertype; ///< Indica si las listas de favoritos se pueden fitrar y catalogar por tipo
+	std::string favorites_dir; ///< Directorio de las listas de favoritos.
 
 	bool security_exit; ///< Indica si se muestra la ventana de confirmacion de salida
 

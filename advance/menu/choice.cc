@@ -19,7 +19,7 @@
  */
 
 #include "portable.h"
-#include <windows.h> //warlock
+
 #include "choice.h"
 #include "text.h"
 #include "common.h"
@@ -27,8 +27,6 @@
 
 using namespace std;
 
-extern int bloqueado; //warlock
-extern int ValorDaFicha;
 // ------------------------------------------------------------------------
 // tristate
 
@@ -65,7 +63,7 @@ bool tristate(tristate_t& v, const std::string& s)
 #define CHOICE_INDENT_3 " OnlyM"
 
 choice::choice(const string& Adesc, int Avalue, bool Aactive)
-	: state(1), active(Aactive) {
+	: state(1), active(Aactive), line_separator(false) {
 	association.value = Avalue;
 
 	desc = Adesc;
@@ -73,7 +71,7 @@ choice::choice(const string& Adesc, int Avalue, bool Aactive)
 }
 
 choice::choice(const string& Adesc, void* Aptr, bool Aactive)
-	: state(1), active(Aactive)  {
+	: state(1), active(Aactive), line_separator(false)  {
 	association.ptr = Aptr;
 
 	desc = Adesc;
@@ -81,7 +79,7 @@ choice::choice(const string& Adesc, void* Aptr, bool Aactive)
 }
 
 choice::choice(const string& Adesc, bool Abistate, int Avalue)
-	: state(2), bistate(Abistate), active(true) {
+	: state(2), bistate(Abistate), active(true), line_separator(false) {
 	association.value = Avalue;
 
 	desc = Adesc;
@@ -90,7 +88,7 @@ choice::choice(const string& Adesc, bool Abistate, int Avalue)
 }
 
 choice::choice(const string& Adesc, tristate_t Atristate, int Avalue)
-	: state(3), tristate(Atristate), active(true) {
+	: state(3), tristate(Atristate), active(true), line_separator(false) {
 	association.value = Avalue;
 
 	desc = Adesc;
@@ -100,7 +98,7 @@ choice::choice(const string& Adesc, tristate_t Atristate, int Avalue)
 }
 
 choice::choice(const string& Adesc_def, const string& Adesc_not, const string& Adesc_only, tristate_t Atristate, int Avalue)
-	: state(3), tristate(Atristate), active(true) {
+	: state(3), tristate(Atristate), active(true), line_separator(false) {
 	association.value = Avalue;
 
 	desc = Adesc_def;
@@ -134,13 +132,42 @@ const string& choice::print_get() const
 		}
 	}
 }
-
-void choice_bag::draw(const string& title, int x, int y, int dx, int pos_base, int pos_rel, int rows)
+void scroll_draw(int x, int y, int dx, int pos, int delta, int max, int separators)
 {
-	int_put_filled(x, y, dx, title, COLOR_CHOICE_TITLE);
+	// pos -> posicion del primer item mostrado relativa al total de items. (pos_base)
+	// delta -> numero de items que se muestran (pos_rel_max)
+	// max -> numero total de items (pos_max)
+	// separators -> numero de lineas separadoras
+	
+	int dy = delta * int_font_dy_get() + separators * 3;
+	
+	if (max <= 1)
+		return;
 
-	y += int_font_dy_get();
+	if (pos >= max)
+		pos = max - 1;
+	if (pos + delta > max)
+		delta = max - pos;
 
+	int y0 = pos * (dy-dx-1) / (max-1);
+	int y1 = dx + (pos+delta-1) * (dy-dx-1) / (max-1);
+
+	// pinta el fondo
+	int_clear_alpha(x, y, dx, dy, COLOR_CHOICE_HIDDEN_SELECT.foreground);
+	// pinta el scrollbox o thumb o cursor
+	if (dx<4)
+		int_clear_alpha(x, y+y0+1, dx, y1-y0+1-2, COLOR_CHOICE_HIDDEN_SELECT.background);
+	else
+		int_clear_alpha(x+1, y+y0+1, dx-2, y1-y0+1-2, COLOR_CHOICE_HIDDEN_SELECT.background);
+}
+
+void choice_bag::draw(const string& title, int x, int y, int dx, int pos_base, int pos_rel, int rows, int separators)
+{
+	// si no caben todas las opciones pinta el scrollbar
+	if (rows < size()) {
+		scroll_draw(x+dx+1, y, (int_font_dx_get()/2)-2, pos_base, rows, size(), separators);
+	}
+	
 	for(unsigned j=0;j<rows;++j) {
 		int_color color;
 		int_color colorf;
@@ -198,6 +225,14 @@ void choice_bag::draw(const string& title, int x, int y, int dx, int pos_base, i
 		int_put_special(in, x+indent, y, dx - indent - key_width, rest, colorf, color, color);
 
 		y += int_font_dy_get();
+
+		//	pinta las lineas separadoras
+		if (separators)
+			int_clear(x, y, dx, 3, COLOR_CHOICE_NORMAL.background);
+		if (i->line_separator_get()) {
+			int_clear(x+3, y + 1, dx-6, 1, COLOR_CHOICE_NORMAL.foreground);
+			y += 3;
+		}
 	}
 }
 
@@ -205,7 +240,7 @@ int choice_bag::run(const string& title, int x, int y, int dx, choice_container:
 {
 	int key = EVENT_ESC;
 	int done = 0;
-	int border = int_font_dx_get() / 2;
+	int border = int_font_dx_get() / 2 + 1;
 
 	if (x < 0)
 		x = (int_dx_get() - dx - border * 2) / 2;
@@ -222,10 +257,21 @@ int choice_bag::run(const string& title, int x, int y, int dx, choice_container:
 	int pos_base = 0;
 	int pos_rel = 0;
 
-	int dy = (pos_rel_max+1) * int_font_dy_get();
+	int lines_separator = 0;
+	for(iterator i=begin();i!=end();++i) {
+		if (i->line_separator_get())
+			lines_separator++;
+	}
+
+	int dy = (title != "" ? int_font_dy_get()+border+1 : 0) + pos_rel_max * int_font_dy_get() + lines_separator * 3;
 
 	int_box(x-border, y-border, dx+2*border, dy+border*2, 1, COLOR_CHOICE_NORMAL.foreground);
 	int_clear(x-border+1, y-border+1, dx+2*border-2, dy+border*2-2, COLOR_CHOICE_NORMAL.background);
+	if (title != "") {
+		int_clear(x-border+1, y+int_font_dy_get()+border/2+1, dx+2*border-2, 1, COLOR_CHOICE_NORMAL.foreground);
+		int_put_filled(x, y, dx, title, COLOR_CHOICE_TITLE);
+		y += int_font_dy_get() + border+1;
+	}
 
 	unsigned count = 0;
 	for(iterator i=begin();i!=end();++i) {
@@ -250,7 +296,7 @@ int choice_bag::run(const string& title, int x, int y, int dx, choice_container:
 	}
 
 	while (!done) {
-		draw(title, x, y, dx, pos_base, pos_rel, pos_rel_max);
+		draw(title, x, y, dx, pos_base, pos_rel, pos_rel_max, lines_separator);
 
 		key = int_event_get();
 
@@ -306,9 +352,9 @@ int choice_bag::run(const string& title, int x, int y, int dx, choice_container:
 				}
 				break;
 			case EVENT_ESC :
-			case EVENT_MENU :
-			case EVENT_ESCEMULE:
 			case EVENT_SETCOIN :
+			case EVENT_ESCEMULE:
+			case EVENT_MENU :
 				done = 1;
 				break;
 		}
@@ -319,11 +365,14 @@ int choice_bag::run(const string& title, int x, int y, int dx, choice_container:
 	return key;
 }
 
+// -------------------------------------
+// favorites
+
 int choice_bag::favorites_run(const string& title, int x, int y, int dx, choice_container::iterator& pos)
 {
 	int key = EVENT_ESC;
 	int done = 0;
-	int border = int_font_dx_get() / 2;
+	int border = int_font_dx_get() / 2 + 1;
 
 	if (x < 0)
 		x = (int_dx_get() - dx - border * 2) / 2;
@@ -340,11 +389,20 @@ int choice_bag::favorites_run(const string& title, int x, int y, int dx, choice_
 	int pos_base = 0;
 	int pos_rel = 0;
 
-	int dy = (pos_rel_max+1) * int_font_dy_get();
+	int lines_separator = 0;
+	for(iterator i=begin();i!=end();++i) {
+		if (i->line_separator_get())
+			lines_separator++;
+	}
+
+	int dy = (pos_rel_max+1) * int_font_dy_get() + border + 1 + lines_separator * 3;
 
 	int_box(x-border, y-border, dx+2*border, dy+border*2, 1, COLOR_CHOICE_NORMAL.foreground);
 	int_clear(x-border+1, y-border+1, dx+2*border-2, dy+border*2-2, COLOR_CHOICE_NORMAL.background);
-
+	int_clear(x-border+1, y+int_font_dy_get()+border/2+1, dx+2*border-2, 1, COLOR_CHOICE_NORMAL.foreground);
+	int_put_filled(x, y, dx, title, COLOR_CHOICE_TITLE);
+	y += int_font_dy_get() + border+1;
+	
 	unsigned count = 0;
 	for(iterator i=begin();i!=end();++i) {
 		if (i->state_get() == 2 && i->bistate_get()) {
@@ -359,7 +417,7 @@ int choice_bag::favorites_run(const string& title, int x, int y, int dx, choice_
 	}
 
 	while (!done) {
-		draw(title, x, y, dx, pos_base, pos_rel, pos_rel_max);
+		draw(title, x, y, dx, pos_base, pos_rel, pos_rel_max, lines_separator);
 
 		key = int_event_get();
 
@@ -385,7 +443,6 @@ int choice_bag::favorites_run(const string& title, int x, int y, int dx, choice_
 				done = 1;
 				break;
 			case EVENT_ESC :
-			case EVENT_SETCOIN :
 			case EVENT_ESCEMULE:
 			case EVENT_MENU :
 				done = 1;
@@ -396,6 +453,12 @@ int choice_bag::favorites_run(const string& title, int x, int y, int dx, choice_
 	pos = begin() + pos_base + pos_rel;
 
 	return key;
+}
+
+void choice_bag::insert_line() {
+	choice_bag::iterator i = end();
+	if (i != begin())
+		(i-1)->line_separator_set();
 }
 
 choice_container::iterator choice_bag::find_by_value(int value)
@@ -458,12 +521,8 @@ void menu_pos(int pos, int& pos_base, int& pos_rel, int pos_rel_max, int pos_bas
 
 int menu_key(int key, int& pos_base, int& pos_rel, int pos_rel_max, int pos_base_upper, int coln, int pos_max)
 {
-	int Ret;
-	char buffer1[100];
-	Ret = GetPrivateProfileStringA("FICHEIRO","FICHAS","0", buffer1, 100, ".\\advmenu.ini");
-	
 	switch (key) {
-			case EVENT_HOME :
+		case EVENT_HOME :
 			menu_pos(0, pos_base, pos_rel, pos_rel_max, pos_base_upper, coln, pos_max);
 			break;
 		case EVENT_END :
@@ -476,9 +535,7 @@ int menu_key(int key, int& pos_base, int& pos_rel, int pos_rel_max, int pos_base
 			}
 			// otherwise continue
 		case EVENT_PGUP :
-			if ( bloqueado == 2){
-				if (atoi(buffer1) >= ValorDaFicha){
-					if (pos_base >= pos_rel_max) {
+			if (pos_base >= pos_rel_max) {
 				pos_base -= pos_rel_max;
 			} else if (pos_base>0) {
 				pos_base = 0;
@@ -486,30 +543,13 @@ int menu_key(int key, int& pos_base, int& pos_rel, int pos_rel_max, int pos_base
 				pos_rel = 0;
 			}
 			break;
-						
-			}else
-			sndPlaySoundA( ".\\auxiliar\\som\\faltaficha.wav", SND_ASYNC || SND_NODEFAULT );
-			}else
-						if (pos_base >= pos_rel_max) {
-				pos_base -= pos_rel_max;
-			} else if (pos_base>0) {
-				pos_base = 0;
-			} else {
-				pos_rel = 0;
-			}
-			break;
-			
-	
 		case EVENT_RIGHT :
 			if (coln > 1) {
 				menu_pos(pos_base + pos_rel + 1, pos_base, pos_rel, pos_rel_max, pos_base_upper, coln, pos_max);
-			break;
+				break;
 			}
 			// otherwise continue
 		case EVENT_PGDN :
-			if ( bloqueado == 2){
-				if (atoi(buffer1) >= ValorDaFicha){
-			
 			if (pos_base + pos_rel_max <= pos_base_upper) {
 				pos_base += pos_rel_max;
 			} else if (pos_base < pos_base_upper) {
@@ -521,42 +561,12 @@ int menu_key(int key, int& pos_base, int& pos_rel, int pos_rel_max, int pos_base
 					pos_rel = 0;
 			}
 			break;
-				}else
-			sndPlaySoundA( ".\\auxiliar\\som\\faltaficha.wav", SND_ASYNC || SND_NODEFAULT );
-			}else
-			if (pos_base + pos_rel_max <= pos_base_upper) {
-				pos_base += pos_rel_max;
-			} else if (pos_base < pos_base_upper) {
-				pos_base = pos_base_upper;
-			} else {
-				if (pos_max >= pos_base + 1)
-					pos_rel = pos_max - pos_base - 1;
-				else
-					pos_rel = 0;
-			}
-			break;
-
-
 		case EVENT_UP :
-			if ( bloqueado == 2){
-				if (atoi(buffer1) >= ValorDaFicha)
 			menu_pos(pos_base + pos_rel - coln, pos_base, pos_rel, pos_rel_max, pos_base_upper, coln, pos_max);
-			else
-			sndPlaySoundA( ".\\auxiliar\\som\\faltaficha.wav", SND_ASYNC || SND_NODEFAULT );
-			}else
-				menu_pos(pos_base + pos_rel - coln, pos_base, pos_rel, pos_rel_max, pos_base_upper, coln, pos_max);
 			break;
 		case EVENT_DOWN :
-			if ( bloqueado == 2){
-				if (atoi(buffer1) >= ValorDaFicha)
-				menu_pos(pos_base + pos_rel + coln, pos_base, pos_rel, pos_rel_max, pos_base_upper, coln, pos_max);
-			else
-			sndPlaySoundA( ".\\auxiliar\\som\\faltaficha.wav", SND_ASYNC || SND_NODEFAULT );
-			}else
-				menu_pos(pos_base + pos_rel + coln, pos_base, pos_rel, pos_rel_max, pos_base_upper, coln, pos_max);
+			menu_pos(pos_base + pos_rel + coln, pos_base, pos_rel, pos_rel_max, pos_base_upper, coln, pos_max);
 			break;
-		
-		
 		default:
 			return key;
 	}
@@ -621,5 +631,7 @@ int menu_key_custom(int key, int& pos_base, int& pos_rel, int pos_rel_max, int p
 
 	return EVENT_NONE;
 }
+
+
 
 

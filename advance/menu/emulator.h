@@ -64,6 +64,8 @@ protected:
 	std::string user_marquee_path;
 	std::string user_title_path;
 	std::string user_rom_filter;
+	std::string user_default_snap;
+	std::string user_default_marquee;
 
 	std::string custom_file_path;
 	std::string nocustom_background_path;
@@ -106,6 +108,8 @@ public:
 	void state_set(bool Astate) { state = Astate; }
 	bool state_get() const { return state; }
 
+	merge_t emulator_merge_get(const merge_t default_merge) const;
+
 	static const unsigned flag_derived_vector = game::flag_user;
 	static const unsigned flag_derived_vertical = game::flag_user << 1;
 	static const unsigned flag_derived_resource = game::flag_user << 2;
@@ -119,6 +123,9 @@ public:
 	static const unsigned flag_derived_pokercasino = game::flag_user << 10;
 	static const unsigned flag_derived_quiztrivial = game::flag_user << 11;
 	static const unsigned flag_derived_golfdarfish = game::flag_user << 12;
+	static const unsigned flag_derived_romarcade = game::flag_user << 13;
+	static const unsigned flag_derived_softwarelist = game::flag_user << 14;
+	static const unsigned flag_derived_chd = game::flag_user << 15;
 
 	virtual int attrib_run(int x, int y) = 0;
 	virtual void attrib_load();
@@ -153,6 +160,10 @@ public:
 	const std::string& user_title_path_get() const { return user_title_path; }
 	void user_rom_filter_set(const std::string& A) { user_rom_filter = A; }
 	const std::string& user_rom_filter_get() const { return user_rom_filter; }
+	void user_default_snap_path_set(const std::string& A) { user_default_snap = A; }
+	const std::string& user_default_snap_path_get() const { return user_default_snap; }
+	void user_default_marquee_path_set(const std::string& A) { user_default_marquee = A; }
+	const std::string& user_default_marquee_path_get() const { return user_default_marquee; }
 	void custom_file_path_set(const std::string& A) { custom_file_path = A; }
 	const std::string& custom_file_path_get() const { return custom_file_path; }
 	void nocustom_background_path_set(const std::string& A) { nocustom_background_path = A; }
@@ -182,12 +193,11 @@ public:
 	std::string config_marquee_path_get() const { return config_marquee_path; }
 	std::string config_title_path_get() const { return config_title_path; }
 	
-	unsigned preview_set(game_set& gar) const;
+	virtual unsigned preview_set(game_set& gar) const;
 
 	virtual bool run(const game& g, const game* bios, unsigned orientation, bool set_difficulty, difficulty_t difficulty, bool set_attenuation, int attenuation, bool ignore_error) const;
 	virtual bool load_cfg(const game_set& gar, bool quiet) = 0;
-	virtual bool load_data(const game_set& gar) = 0;
-	virtual bool load_game(game_set& gar, bool quiet) = 0;
+	virtual bool load_game(const std::string& xml_dir, game_set& gar, bool quiet) = 0;
 	virtual bool load_software(game_set& gar, bool quiet) = 0;
 	virtual void update(const game& g) const;
 
@@ -195,6 +205,9 @@ public:
 	virtual bool is_runnable() const;
 	virtual bool is_empty() const;
 	virtual std::string type_get() const = 0;
+
+	virtual bool clean_xml(const std::string& xml_dir, const game_set& gar);
+	virtual bool update_xml(const std::string& xml_dir);
 };
 
 class mame_info : public emulator {
@@ -210,14 +223,13 @@ protected:
 
 	bool load_info(game_set& gar);
 	bool load_xml(std::istream& is, game_set& gar);
-	bool load_game_info(game_set& gar);
-	bool load_game_xml(game_set& gar);
-	bool update_info();
-	bool is_update_info();
-	bool update_xml();
-	bool is_update_xml();
-	bool is_present_info();
-	bool is_present_xml();
+	bool load_game_info(const std::string& xml_dir, game_set& gar);
+	bool load_game_xml(const std::string& xml_dir, game_set& gar);
+	bool update_info(const std::string& xml_dir);
+	bool is_update_info(const std::string& xml_dir);
+	bool is_update_xml(const std::string& xml_dir);
+	bool is_present_info(const std::string& xml_dir);
+	bool is_present_xml(const std::string& xml_dir);
 public:
 	mame_info(const std::string& Aname, const std::string& Aexe_path, const std::string& Acmd_arg);
 
@@ -229,8 +241,10 @@ public:
 	virtual void cache(const game_set& gar, const game& g) const;
 	virtual bool tree_get() const;
 
-	virtual bool load_game(game_set& gar, bool quiet);
+	virtual bool load_game(const std::string& xml_dir, game_set& gar, bool quiet);
 	virtual void update(const game& g) const;
+
+	virtual bool update_xml(const std::string& xml_dir);
 };
 
 class mame_mess : public mame_info {
@@ -251,8 +265,14 @@ public:
 
 class mame_mame : public mame_info {
 protected:
+	tristate_t exclude_system_effective;
+	tristate_t exclude_system_orig;
+	tristate_t exclude_softwarelist_effective;
+	tristate_t exclude_softwarelist_orig;
 	tristate_t exclude_neogeo_effective;
 	tristate_t exclude_neogeo_orig;
+	tristate_t exclude_chd_effective;
+	tristate_t exclude_chd_orig;
 	tristate_t exclude_deco_effective;
 	tristate_t exclude_deco_orig;
 	tristate_t exclude_playchoice_effective;
@@ -283,8 +303,9 @@ public:
 	virtual void cache(const game_set& gar, const game& g) const;
 
 	virtual bool run(const game& g, const game* bios, unsigned orientation, bool set_difficulty, difficulty_t difficulty, bool set_attenuation, int attenuation, bool ignore_error) const;
-	virtual bool load_data(const game_set& gar);
 	virtual bool load_software(game_set& gar, bool quiet);
+
+	virtual bool clean_xml(const std::string& xml_dir, const game_set& gar);
 };
 
 class dmame : public mame_mame {
@@ -344,10 +365,57 @@ public:
 
 	virtual bool run(const game& g, const game* bios, unsigned orientation, bool set_difficulty, difficulty_t difficulty, bool set_attenuation, int attenuation, bool ignore_error) const;
 	virtual bool load_cfg(const game_set& gar, bool quiet);
-	virtual bool load_data(const game_set& gar);
 	virtual bool load_software(game_set& gar, bool quiet);
 
 	virtual std::string type_get() const;
+};
+
+// mess_mess
+class mess_mess : public mame_info {
+	std::string emu_system;
+	
+	bool load_software_xml(game_set& gar, const std::string& xml_file);
+	void scan_software(const game_set& gar, const std::string& dirlist, bool quiet);
+	void scan_software_dir(const game_set& gar, const std::string& dir, bool quiet);
+	std::string load_path(const game_set& gar, const std::string& path) const;
+protected:
+	std::string emu_hash_path;
+public:
+	mess_mess(const std::string& Aname, const std::string& Asystem, const std::string& Aexe_path, const std::string& Acmd_arg);
+
+	virtual std::string type_get() const;
+	virtual bool is_empty() const;
+	
+	virtual void attrib_load();
+	virtual void attrib_save();
+	virtual bool attrib_set(const std::string& value0, const std::string& value1);
+	virtual void attrib_get(adv_conf* config_context, const char* section, const char* tag);
+	virtual bool filter(const game& g) const;
+	virtual int attrib_run(int x, int y);
+	
+	virtual bool load_game(const std::string& xml_dir, game_set& gar, bool quiet);
+	virtual bool load_software(game_set& gar, bool quiet);
+	virtual unsigned preview_set(game_set& gar) const;
+	virtual bool update_xml(const std::string& xml_dir);
+	virtual void update(const game& g) const;
+	
+	virtual bool run(const game& g, const game* bios, unsigned orientation, bool set_difficulty, difficulty_t difficulty, bool set_attenuation, int attenuation, bool ignore_error) const;
+};
+
+// sdlmess
+class sdlmess : public mess_mess {
+	std::string cfg_ini;
+public:
+	sdlmess(const std::string& Aname, const std::string& Aini, const std::string& Asystem, const std::string& Aexe_path, const std::string& Acmd_arg);
+	virtual bool load_cfg(const game_set& gar, bool quiet);
+};
+
+// wmess
+class wmess : public mess_mess {
+	std::string cfg_ini;
+public:
+	wmess(const std::string& Aname, const std::string& Aini, const std::string& Asystem, const std::string& Aexe_path, const std::string& Acmd_arg);
+	virtual bool load_cfg(const game_set& gar, bool quiet);
 };
 
 class dmess : public mame_mess {
@@ -361,7 +429,6 @@ public:
 
 	virtual bool run(const game& g, const game* bios, unsigned orientation, bool set_difficulty, difficulty_t difficulty, bool set_attenuation, int attenuation, bool ignore_error) const;
 	virtual bool load_cfg(const game_set& gar, bool quiet);
-	virtual bool load_data(const game_set& gar);
 	virtual bool load_software(game_set& gar, bool quiet);
 
 	virtual std::string type_get() const;
@@ -389,8 +456,7 @@ public:
 	virtual void cache(const game_set& gar, const game& g) const;
 	virtual bool tree_get() const;
 
-	virtual bool load_data(const game_set& gar);
-	virtual bool load_game(game_set& gar, bool quiet);
+	virtual bool load_game(const std::string& xml_dir, game_set& gar, bool quiet);
 	virtual bool load_software(game_set& gar, bool quiet);
 };
 
@@ -425,8 +491,7 @@ public:
 	virtual void cache(const game_set& gar, const game& g) const;
 
 	virtual bool load_cfg(const game_set& gar, bool quiet);
-	virtual bool load_data(const game_set& gar);
-	virtual bool load_game(game_set& gar, bool quiet);
+	virtual bool load_game(const std::string& xml_dir, game_set& gar, bool quiet);
 	virtual bool load_software(game_set& gar, bool quiet);
 
 	virtual std::string type_get() const;
@@ -443,9 +508,9 @@ public:
 	systems(const std::string& Aname, const std::string& Aexe_path, const std::string& Acmd_arg);
 
 	virtual void attrib_get(adv_conf* config_context, const char* section, const char* tag);
-
+	virtual void cache(const game_set& gar, const game& g) const;
 	virtual bool load_cfg(const game_set& gar, bool quiet);
-	virtual bool load_game(game_set& gar, bool quiet);
+	virtual bool load_game(const std::string& xml_dir, game_set& gar, bool quiet);
 
 	virtual std::string type_get() const;
 };

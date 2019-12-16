@@ -51,20 +51,22 @@
 #define EVENT_CLONE (21 << 16)
 #define EVENT_IDLE_0 (22 << 16)
 #define EVENT_IDLE_1 (23 << 16)
+#define EVENT_IDLE_EXIT (24 << 16)
 #define EVENT_COMMAND (27 << 16)
 #define EVENT_OFF (28 << 16)
 #define EVENT_MENU (29 << 16)
 #define EVENT_EMU_NEXT (30 << 16)
+#define EVENT_EMU_PRE (38 << 16)
 #define EVENT_ROTATE (31 << 16)
 #define EVENT_LOCK (32 << 16)
 #define EVENT_PREVIEW (34 << 16)
 #define EVENT_MUTE (35 << 16)
 #define EVENT_OFF_FORCE (36 << 16)
 #define EVENT_ESC_FORCE (37 << 16)
-#define EVENT_EMU_PRE (38 << 16)
-#define EVENT_SETCOIN (39 << 16) //warlock Set coin
-#define EVENT_ESCEMULE (40 << 16) //warlock Set coin
-
+#define EVENT_SETCOIN (40 << 16) //warlock Set coin
+#define EVENT_ESCEMULE (41 << 16) //warlock Set coin
+//ves
+#define EVENT_MINFO (39 << 16)
 
 bool event_in(const std::string& s);
 void event_out(adv_conf* config_context, const char* tag);
