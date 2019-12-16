@@ -11,11 +11,25 @@ Help the project with your star
 ![alt text](https://imgur.com/Mrz54Pt.png)
 
 
+
 Comercial system menu
 
 Video Demo: https://youtu.be/pugc3UPXvLI
 
+![alt text](https://imgur.com/nT59JQ7.png)
+
 + Commercial Advmenu System with Credit Management
+
++ Commands
+F8       = System Menu Configurations
+ESC      = Close FrontEnd Menu
+LCtrl    = Back to the system menu (if enabled in menu F8)
+Numpad 7 = Coin
+Numpad 8 = Start Game 
+Numpad 9 = Start Game 
+Enter    = Start Game 
+
+
 
 + Compilar version DOS/Windows:
  MINGW (Windows): 
