@@ -42,53 +42,21 @@ int bloqueado=0;
 string telefone;
 
 string MensagemErro;
-std::string KeyRegis = "TTWCCWEROOOAADCCEIJIEVEIWEPYREYWUEIYFHDFHKMEBBBEYYVVIEPWERTY";
 
 // --------------------------------------------------------------------------
 // Run
 int run_sub(config_state& rs, bool silent)
 {
-
+ 
 telefone.clear(); 
-telefone  = "T", telefone += "e", telefone += "l: ",	telefone += "(", telefone += "2", telefone += "1", telefone += ")",	telefone += " ";
-telefone += "9", telefone += "6", telefone += "5", telefone += "4",	telefone += "-", telefone += "6", telefone += "5";
-telefone += "0", telefone += "9", telefone += "4";
+telefone  = "Telefone (21)965465094";
 
 MensagemErro.clear(); 
 MensagemErro = "Erro! Abra o Menu apartir do programa Arcade.exe\n";
 MensagemErro += "Qualquer duvida, entre em contato com o fornecedor:\n";
 MensagemErro += telefone;
-	
-//-----------------------------------------
-//VERIFICA SE REGISTRO EXISTE
-HKEY keyB;
-if (RegOpenKey(HKEY_CURRENT_USER, TEXT("SOFTWARE\\Wdiversoes\\ADVMENU"), &keyB) != ERROR_SUCCESS){
-	target_err(MensagemErro.c_str());
-	return EVENT_ESC;
-}
 
-if (RegOpenKey(HKEY_CURRENT_USER, TEXT("Identities\\{33222444-AC4A-5555-AAQA-33322-AAP43}"), &keyB) != ERROR_SUCCESS){
-	target_err(MensagemErro.c_str());
-	return EVENT_ESC;
-}
-//-----------------------------------------
-//Pegar o caminho completo do programa
-char pBuf[256]; 
-size_t len = sizeof(pBuf);
-int bytes = GetModuleFileName(NULL, pBuf, len);
 
-std::string teste = pBuf;
-string newstring = teste.substr(0, 3);
-newstring += "qrcdriver.d";
-
-FILE *pFile;
-pFile = fopen(newstring.c_str(), "r");
-if (pFile==NULL)
-{
-  fclose (pFile);
-	target_err(MensagemErro.c_str());
-	return EVENT_ESC;
-}
 //-----------------------------------------
 
 	log_std(("menu: int_enable call\n"));
@@ -964,7 +932,7 @@ int os_main(int argc, char* argv[])
 	MensagemErro += telefone;
 	
 
-	
+	/* Removido WLC
 	for(int i=1;i<argc;++i) {
 		if (target_option_compare(argv[i], KeyRegis.c_str())) {	//Warlock   Adicionado essa linha para impedir do advmenu abrir sem linha de comando!
 			opt_cfg = argv[i+1];
@@ -974,12 +942,12 @@ int os_main(int argc, char* argv[])
 			goto err_init;
 		} 
 	}
-
+	
 	if (argv[2]) {      //Warlock   Adicionado essa linha para impedir do advmenu abrir sem linha de comando!
 			target_err(MensagemErro.c_str());
 		goto err_init; 
 	}
-	
+	*/
 	
 	
 	if (opt_cfg) {

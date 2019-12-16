@@ -41,7 +41,7 @@
 
 
 using namespace std;
-extern string KeyRegis;
+//extern string KeyRegis; Removido WLC
 extern vector<string> ListaEmuladores;
 extern int ValorDaFicha;
 extern bool NumerarLista; //warlock
@@ -333,8 +333,8 @@ int run_reboot(config_state& rs)
 				break;	
 			case 2 : 
 				sp = "/c taskkill /f /im advmenu.exe && TIMEOUT 2 && CALL advmenu.exe ";
-				sp += "-";
-				sp += KeyRegis;
+				//sp += "-";
+				//sp += KeyRegis;
 				ShellExecute(0, "open", "cmd.exe", sp.c_str(), 0, SW_HIDE);
 				break;	
 			case 3 :
@@ -675,8 +675,8 @@ int run_testjoy(config_state& rs)
 				break;
 			case 3 :
 				sp = "/c taskkill /f /im advmenu.exe && call ConfigurarControle.Exe && call advmenu.exe ";
-				sp += "-";
-				sp += KeyRegis;
+				//sp += "-";
+				//sp += KeyRegis;
 				ShellExecute(0, "open", "cmd.exe", sp.c_str(), 0, SW_HIDE);
 				break;
 			default:
@@ -1104,8 +1104,8 @@ int run_settema(config_state& rs, const std::string& sr)
 				rs.restore_save();
 				
 				sp =  "/c taskkill /f /im advmenu.exe && TIMEOUT 2 && CALL advmenu.exe ";
-				sp += "-";
-				sp += KeyRegis;
+				//sp += "-";
+				//sp += KeyRegis;
 				
 				ShellExecute(0, "open", "cmd.exe", sp.c_str(), 0, SW_HIDE);
 				
