@@ -6,3 +6,6 @@
 + +Donate = +Project
 
 Comercial system menu
+
+-Compilar version DOS/Windows:
+ MINGW (Windows): https://sourceforge.net/projects/advmenuplus/files/Compilers/Mingw-advmenuplus.zip/download
