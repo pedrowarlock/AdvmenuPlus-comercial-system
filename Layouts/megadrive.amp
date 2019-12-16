@@ -1,0 +1,101 @@
+######################################################
+# Layout: "Wdiversões - PedroWarlock."
+# AdvMenuPlus: >= 2016.04.19
+# Resolucion: 800x600
+# Creador/adaptador: PEDROWARLOCK
+######################################################
+# ORIENTACION - MODO DA TELA QUE SERÁ MOSTRADO O EMULADOR -VERTICAL/HORIZONTAL
+###############
+orientation 
+
+# HELP - IMAGEM OU MNG QUE SERÁ MOSTRADO NO HELP DO EMULADOR
+########
+help_image_path ".\Gamestyle\HelpMenu.png" 
+
+# START - IMAGEM OU MNG QUE SERÁ MOSTRADO ANTES DE CARREGAR O JOGO
+#########
+start_image_path 
+
+# FUNDO
+#########
+background_image_path ".\Gamestyle\megadrive.png"
+background_color 000000
+
+# CONFIGURAÇÃO DA LISTA DE SELEÇÃO
+###########################################
+list_pos_size "40 97 314 447"
+list_font_path "impact.ttf"
+list_font_size 18
+list_font_color 20202F
+list_font_select_color fefefe 10A239 0.0
+list_rows 18
+list_cols 1
+list_selected_pos 
+list_align left
+#list_diagonal 5
+
+# SCROLL - BARRA DE DESPLAZAMIENTO VERTICAL
+###########################################
+scroll_pos_size 358 97 3 447
+scroll_color 00008C
+
+# JANELA QUE MOSTRA OS SNAPS DO JOGO
+##################################
+#win_cabinets 0 0 0 0
+win_snaps 389 147 384 384
+#win_color none
+
+
+# BARRA QUE MOSTRA NOME DO EMULADOR
+###############################
+bar_info_1 5 575 583 18
+bar_info_1_font "impact.ttf"
+bar_info_1_color 313140
+bar_info_1_text %emulator%
+bar_info_1_align left
+
+
+# CONTADOR GERAL
+###############################
+bar_info_2 35 548 75 14
+bar_info_2_font "impact.ttf"
+bar_info_2_color BDBDAD
+bar_info_2_text "%contador_geral%"
+bar_info_2_align left
+
+
+# BARRA DE FICHAS/TEMPO
+###############################
+bar_info_3 540 575 150 18
+bar_info_3_font "impact.ttf"
+bar_info_3_color 0036D9
+bar_info_3_text "%fichas_time% "
+bar_info_3_align right
+
+#BARRA QUE MOSTRA O NUMERO DO JOGO SELECIONADO/JOGOS TOTAL
+###############################
+bar_info_4 269 70 85 14
+bar_info_4_font "impact.ttf"
+bar_info_4_color fefefe
+bar_info_4_text "%selected% de %games%"
+bar_info_4_align right
+
+# BARRA DE FICHAS/TEMPO
+###############################
+bar_info_Coin 685 575 110 18
+bar_info_Coin_font "impact.ttf"
+bar_info_Coin_color 1E9927
+bar_info_Coin_NoCoin_color EF1C21
+bar_info_Coin_text "%contador%"
+bar_info_Coin_align left
+
+
+# MENU
+########
+menu_font_path "impact.ttf"
+menu_font_size 19
+menu_title_color black FFFFFF
+menu_font_color black FFFFFF
+menu_font_select_color FFFFFF 247ef0
+
+

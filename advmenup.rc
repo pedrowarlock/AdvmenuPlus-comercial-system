@@ -1,0 +1,1008 @@
+display_size 800 600
+device_joystick sdl
+device_video_clock 10-50 / 31.5 / 55-130
+device_video auto
+device_video_interlace no
+#*************************************************************
+#FULLSCREEN / WINDOW
+device_video_output fullscreen
+#device_video_output window
+#*************************************************************
+misc_quiet yes
+misc_hidedesktop yes
+misc_splash none
+menu_systems no
+event_mode fast
+event_repeat 150 20
+#*************************************************************
+#Salva ao fechar
+#config restore_at_idle 
+#Não salva ao fechar
+#config save_at_exit
+#*************************************************************
+menu_systems_background none
+menu_systems_default_marquee default
+menu_systems_default_snap default
+menu_systems_flyers ".\Layouts\MenuSystem\snap\;..\png"
+menu_systems_cabinets ".\Layouts\MenuSystem\flyers\;..\png"
+menu_systems_altss ".\Layouts\MenuSystem\snap\;..\png"
+menu_systems_layout ".\Layouts\MenuSystem\menu.amp"
+menu_systems_font ".\auxiliar\font\impact.ttf" 
+#*************************************************************
+preview_default ".\auxiliar\image\semfoto.png"
+sound_foreground_key ".\auxiliar\som\updown.wav"
+xml_dir ".\listas"
+#*************************************************************
+#background_config_menu ".\auxiliar\image\mamelogo.png"
+background_config_menu none
+sound_foreground_coin ".\auxiliar\som\coin.wav"
+sound_foreground_nocoin ".\auxiliar\som\no_credito.wav"
+sound_foreground_notime ".\auxiliar\som\no_tempo.wav"
+sound_foreground_zgeral ".\auxiliar\som\voz_zerarcontador.wav"
+sound_foreground_zerado ".\auxiliar\som\voz_zerarcreditos.wav"
+#***********************************************
+#spande snaps
+#***********************************************
+preview_expand 3.0
+#***********************************************
+#Descanso de tela
+#*********************************************** 
+idle_screensaver 120 20 
+idle_screensaver_preview snap
+#*******************************************************************
+#formato em que a lista poderá ser vista
+#mode_skip - Lista de skins e visualizações que não aparecerá na tela -#custom-
+#*******************************************************************
+mode_skip tile_small full full_mixed text list_mixed tile_normal tile_big tile_enormous tile_giant tile_icon tile_marquee tile_tiny list
+mode layout
+sort name
+preview snap
+#***********************************************
+#Teclas 
+#***********************************************
+event_assign setcoin 7_pad or 2joy_7
+event_assign command f8 or 2joy_8
+event_assign emulator_next f7 or 2joy_5
+event_assign emulator_pre f6 or 2joy_6
+event_assign up up or 1joy_up or 2joy_up or 3joy_up 
+event_assign down down or 1joy_down or 2joy_down or 3joy_down
+event_assign left left or 1joy_left or 2joy_left or 3joy_left
+event_assign right right or 1joy_right or 2joy_right or 3joy_right
+event_assign enter enter or enter_pad or 2joy_9 or 2joy_10
+event_assign escemule lcontrol or 2joy_5 or 2joy_6
+event_assign help f1
+#***********************************************
+event_assign menu backquote or backslash
+event_alpha yes
+event_assign esc esc
+event_assign space space
+event_assign home home
+event_assign end end
+event_assign pgup pgup
+event_assign pgdn pgdn 
+event_assign del del
+event_assign ins insert
+#event_assign shutdown lcontrol esc
+event_assign mode tab
+
+event_assign favorites_next f2
+event_assign type f3
+event_assign exclude f4
+event_assign sort f5
+event_assign setfavorites f9 
+event_assign settype f10
+event_assign runclone f12
+event_assign rotate 0_pad
+event_assign lock scrlock
+event_assign preview space
+event_assign mute period_pad
+
+
+
+#***********************************************
+#emulador mame
+#***********************************************
+emulator "ARCADE" generic ".\Emuladores\MAME\mameui32.exe" "%p"
+emulator_roms "ARCADE" "..\..\JOGOS\ARCADE;..\..\JOGOS\CAPCOM;..\..\JOGOS\FIGHTER;..\..\JOGOS\NEOGEO;..\..\JOGOS\SHUMPS"
+emulator_altss "ARCADE" "..\..\snap\arcade;..\mng"
+
+emulator_flyers "ARCADE" "D:\Desktop\icons"
+emulator_cabinets "ARCADE" "D:\Desktop\icons"
+emulator_icons "ARCADE" "D:\Desktop\icons"
+emulator_marquees "ARCADE" "D:\Desktop\icons"
+emulator_titles "ARCADE" "D:\Desktop\icons"
+
+emulator_roms_filter "ARCADE" "*.zip"
+emulator_layout "ARCADE" ".\Layouts\arcade.amp"
+emulator_background "ARCADE" "F:\ADVMENU\ADVMENU\Layouts\MenuSystem\arcade.png"
+#***********************************************
+#CPS
+#***********************************************
+emulator "CAPCOM" generic ".\Emuladores\MAME\mameui32.exe" "%p"
+emulator_roms "CAPCOM" "..\..\JOGOS\CAPCOM"
+emulator_altss "CAPCOM" "..\..\snap\arcade;..\mng"
+emulator_roms_filter "CAPCOM" "*.zip"
+emulator_layout "CAPCOM" ".\Layouts\capcom.amp"
+#***********************************************
+#NEOGEO
+#***********************************************
+emulator "NEOGEO" generic ".\Emuladores\MAME\mameui32.exe" "%p"
+emulator_roms "NEOGEO" "..\..\JOGOS\NEOGEO"
+emulator_altss "NEOGEO" "..\..\snap\arcade;..\mng"
+emulator_roms_filter "NEOGEO" "*.zip"
+emulator_layout "NEOGEO" ".\Layouts\neogeo.amp"
+#***********************************************
+#SHMUPS
+#***********************************************
+emulator "JogosDeNave" generic ".\Emuladores\MAME\mameui32.exe" "%p"
+emulator_roms "JogosDeNave" "..\..\JOGOS\SHUMPS"
+emulator_altss "JogosDeNave"  "..\..\snap\arcade;..\mng"
+emulator_roms_filter "JogosDeNave" "*.zip"
+emulator_layout "JogosDeNave" ".\Layouts\JogosDeNave.amp"
+#***********************************************
+#FIGHTER
+#***********************************************
+emulator "JogosDeLuta" generic ".\Emuladores\MAME\mameui32.exe" "%p"
+emulator_roms "JogosDeLuta" "..\..\JOGOS\FIGHTER" 
+emulator_altss "JogosDeLuta" "..\..\snap\arcade;..\mng"
+emulator_roms_filter "JogosDeLuta" "*.zip"
+emulator_layout "JogosDeLuta" ".\Layouts\JogosDeLuta.amp"
+#***********************************************
+#emulador TAITO TYPE X²
+#*********************************************** 
+emulator "TAITOTYPEX" generic "GameLauncher.exe" "%p"
+emulator_roms "TAITOTYPEX" ".\JOGOS\taito"
+emulator_altss "TAITOTYPEX" ".\snap\taito;..\mng"
+emulator_roms_filter "TAITOTYPEX" "*.lnk"
+emulator_layout "TAITOTYPEX" ".\Layouts\TAITOTYPEX.amp"
+#***********************************************
+#emulador PcGames
+#***********************************************
+emulator "JogosDeComputador" generic "GameLauncher.exe" "%p"
+emulator_roms "JogosDeComputador" ".\jogos\pcgames"
+emulator_altss "JogosDeComputador" ".\snap\PcGames;..\mng" 
+emulator_roms_filter "JogosDeComputador" "*.lnk"
+emulator_layout "JogosDeComputador" ".\Layouts\JogosDeComputador.amp"
+#***********************************************
+#HACKERS SISTEM
+#***********************************************
+emulator "HACKERS" generic ".\Emuladores\retroarch32\retroarch.exe" "%p"
+emulator_roms "HACKERS" "..\..\jogos\HACKERS"
+emulator_altss "HACKERS" "..\..\snap\HACKERS;..\png"
+emulator_roms_filter "HACKERS" "*.32x;*.bml;*.fds;*.gb;*.gba;*.gbc;*.md;*.n64;*.nds;*.nes;*.pce;*.sms;*.z64;*.smc;*.sfc;*.bin"
+emulator_layout "HACKERS" ".\Layouts\hackers.amp"
+#***********************************************
+#emulador PLAYSTATION 1
+#***********************************************
+emulator "Playstation1" generic ".\Emuladores\retroarch32\retroarch.exe" "%p"  
+emulator_roms "Playstation1" "..\..\jogos\psx1"
+emulator_altss "Playstation1" "..\..\snap\psx1;..\mng"
+emulator_roms_filter "Playstation1" "*cue"
+emulator_layout "Playstation1" ".\Layouts\Playstation1.amp"
+#***********************************************
+#emulador PLAYSTATION 2
+#***********************************************
+emulator "Playstation2" generic ".\Emuladores\PSX2\pcsx2.exe" "%p"
+emulator_roms "Playstation2" "..\..\jogos\psx2"
+emulator_altss "Playstation2" "..\..\snap\psx2;..\mng"
+emulator_roms_filter "Playstation2" "*bin;*img;*iso;*7z"
+emulator_layout "Playstation2" ".\Layouts\Playstation2.amp"
+#***********************************************
+#PSP
+#***********************************************
+emulator "PSP" generic ".\Emuladores\retroarch32\retroarch.exe" "%p"
+emulator_roms "PSP" "..\..\jogos\PSP"
+emulator_altss "PSP" "..\..\snap\PSP;..\png"
+emulator_roms_filter "PSP" "*.cso;*img;*iso;*7z"
+emulator_layout "PSP" ".\Layouts\psp.amp"
+#***********************************************
+#emulador SNES
+#***********************************************
+emulator "SuperNintendo" generic ".\Emuladores\retroarch32\retroarch.exe" "%p"  
+emulator_roms "SuperNintendo" "..\..\jogos\snes"
+emulator_altss "SuperNintendo" "..\..\snap\snes;..\mng" 
+emulator_roms_filter "SuperNintendo" "*.zip;*.sfc;*.smc"
+emulator_layout "SuperNintendo" ".\Layouts\SuperNintendo.amp"
+#***********************************************
+#N64
+#***********************************************
+emulator "NINTENDO64" generic ".\Emuladores\retroarch32\retroarch.exe" "%p"
+emulator_roms "NINTENDO64" "..\..\jogos\N64"
+emulator_altss "NINTENDO64" "..\..\snap\N64;..\png"
+emulator_roms_filter "NINTENDO64" "*.zip;*.n64;*.z64"
+emulator_layout "NINTENDO64" ".\Layouts\NINTENDO64.amp"
+#***********************************************
+#emulador GameBoy
+#***********************************************
+emulator "Gameboy" generic ".\Emuladores\retroarch32\retroarch.exe" "%p"
+emulator_roms "Gameboy" "..\..\jogos\GB" 
+emulator_altss "Gameboy" "..\..\snap\GB;..\png"
+emulator_roms_filter "Gameboy" "*.zip;*.gb;*.gbc"
+emulator_layout "Gameboy" ".\Layouts\Gameboy.amp"
+#***********************************************
+#emulador GameBoy Color
+#***********************************************
+emulator "GameboyColor" generic ".\Emuladores\retroarch32\retroarch.exe" "%p"
+emulator_roms "GameboyColor" "..\..\jogos\GBC" 
+emulator_altss "GameboyColor" "..\..\snap\GBC;..\png"
+emulator_roms_filter "GameboyColor" "*.zip;*.gb;*.gbc"
+emulator_layout "GameboyColor" ".\Layouts\GameboyColor.amp"
+
+#***********************************************
+#emulador Gameboy Advance
+#***********************************************
+emulator "GameboyAdvance" generic ".\Emuladores\retroarch32\retroarch.exe" "%p"
+emulator_roms "GameboyAdvance" "..\..\jogos\GBA" 
+emulator_altss "GameboyAdvance" "..\..\snap\GBA;..\png"
+emulator_roms_filter "GameboyAdvance" "*.zip;*.gb;*.gbc;*.gba"
+emulator_layout "GameboyAdvance" ".\Layouts\Gameboyadvance.amp"
+#***********************************************
+#NES
+#***********************************************
+emulator "Nintendinho" generic ".\Emuladores\retroarch32\retroarch.exe" "%p" 
+emulator_roms "Nintendinho" "..\..\jogos\nes"
+emulator_altss "Nintendinho" "..\..\snap\nes;..\png"
+emulator_roms_filter "Nintendinho" "*.nes;*.7z"
+emulator_layout "Nintendinho" ".\Layouts\Nintendinho.amp"
+#***********************************************
+#Nintendo WII
+#***********************************************
+emulator "NintendoWII" generic ".\Emuladores\WII\Dolphin.exe" "%p"
+emulator_roms "NintendoWII" "..\..\jogos\WII"
+emulator_altss "NintendoWII" "..\..\snap\WII;..\png"
+emulator_roms_filter "NintendoWII" "*.wad;*.iso"
+emulator_layout "NintendoWII" ".\Layouts\NintendoWII.amp"
+#***********************************************
+#Nintendo wii Triforce
+#***********************************************
+emulator "NintendoWIITriforce" generic ".\Emuladores\WIITriforce\Dolphin.exe" "%p"
+emulator_roms "NintendoWIITriforce" "..\..\jogos\WIITriforce"
+emulator_altss "NintendoWIITriforce" "..\..\snap\WIITriforce;..\png"
+emulator_roms_filter "NintendoWIITriforce" "*.wad;*.iso"
+emulator_layout "NintendoWIITriforce" ".\Layouts\NintendoWIITriforce.amp"
+
+#***********************************************
+#Nintendo WIIU 
+#***********************************************
+emulator "NintendoWIIU" generic ".\Emuladores\WIIU\Cemu.exe" "%p"
+emulator_roms "NintendoWIIU" "..\..\jogos\WIIU"
+emulator_altss "NintendoWIIU" "..\..\snap\WIIU;..\png"
+emulator_roms_filter "NintendoWIIU" "*.rpx;*.wux"
+emulator_layout "NintendoWIIU" ".\Layouts\NintendoWIIU.amp"
+
+#***********************************************
+#emulador MegaDrive
+#***********************************************
+emulator "MEGADRIVE" generic ".\Emuladores\retroarch32\retroarch.exe" "%p"
+emulator_roms "MEGADRIVE" "..\..\Jogos\Megadrive"
+emulator_altss "MEGADRIVE" "..\..\snap\Megadrive;..\png"
+emulator_roms_filter "MEGADRIVE" "*.md"
+emulator_layout "MEGADRIVE" ".\Layouts\MegaDrive.amp"
+#***********************************************
+#Master System
+#***********************************************
+emulator "MASTERSYSTEM" generic ".\Emuladores\retroarch32\retroarch.exe" "%p"
+emulator_roms "MASTERSYSTEM" "..\..\jogos\MASTERSYSTEM"
+emulator_altss "MASTERSYSTEM" "..\..\snap\MASTERSYSTEM;..\png"
+emulator_roms_filter "MASTERSYSTEM" "*.zip;*.sms"
+emulator_layout "MASTERSYSTEM" ".\Layouts\MasterSystem.amp"
+#***********************************************
+#SEGA32x
+#***********************************************
+emulator "SEGA32X" generic ".\Emuladores\retroarch32\retroarch.exe" "%p"
+emulator_roms "SEGA32X" "..\..\jogos\SEGA32X"
+emulator_altss "SEGA32X" "..\..\snap\SEGA32X;..\png"
+emulator_roms_filter "SEGA32X" "*.zip;*.32x"
+emulator_layout "SEGA32X" ".\Layouts\SEGA32X.amp"
+#***********************************************
+#emulador DREAMCAST
+#*********************************************** 
+emulator "DREAMCAST" generic ".\Emuladores\retroarch64\retroarch.exe" "%p"  
+emulator_roms "DREAMCAST" "..\..\jogos\DREAMCAST"
+emulator_altss "DREAMCAST" "..\..\snap\DREAMCAST;..\mng" 
+emulator_roms_filter "DREAMCAST" "*.zip;*.cdi"
+emulator_layout "DREAMCAST" ".\Layouts\DREAMCAST.amp"
+
+#***********************************************
+#ATARI2600
+#***********************************************
+emulator "ATARI2600" generic ".\Emuladores\retroarch32\retroarch.exe" "%p"
+emulator_roms "ATARI2600" "..\..\jogos\ATARI2600"
+emulator_altss "ATARI2600" "..\..\snap\ATARI2600;..\png"
+emulator_roms_filter "ATARI2600" "*.A26;*.bin;*.zip"
+emulator_layout "ATARI2600" ".\Layouts\atari2600.amp"
+#***********************************************
+#ATARI7800
+#***********************************************
+emulator "ATARI7800" generic ".\Emuladores\retroarch32\retroarch.exe" "%p"
+emulator_roms "ATARI7800" "..\..\jogos\atari7800"
+emulator_altss "ATARI7800" "..\..\snap\atari7800;..\png"
+emulator_roms_filter "ATARI7800" "*.A78;*.zip"
+emulator_layout "ATARI7800" ".\Layouts\atari7800.amp"
+#***********************************************
+#Turbografx16
+#*********************************************** 
+emulator "TURBOGRAFX16" generic ".\Emuladores\retroarch32\retroarch.exe" "%p"
+emulator_roms "TURBOGRAFX16" "..\..\jogos\TURBOGRAFX16"
+emulator_altss "TURBOGRAFX16" "..\..\snap\TURBOGRAFX16;..\png"
+emulator_roms_filter "TURBOGRAFX16" "*.PCE;*.ZIP"
+emulator_layout "TURBOGRAFX16" ".\Layouts\Turbografx16.amp"
+
+
+
+
+
+device_color_bgr15 yes
+device_color_bgr16 yes
+device_color_bgr24 yes
+device_color_bgr32 yes
+device_color_bgr8 yes
+device_color_palette8 yes
+device_color_yuy2 yes
+
+device_keyboard auto
+device_lgrawinput_calibration auto
+device_mouse none
+device_sdl_samples 2048
+device_sound auto
+device_svgawin_divideclock no
+device_svgawin_skipboard 0
+device_svgawin_stub fullscreen
+
+device_video_cursor auto
+device_video_doublescan yes
+device_video_fastchange no
+
+
+device_video_overlaysize auto
+device_video_singlescan yes
+difficulty none
+display_brightness 1
+display_gamma 1
+display_orientation 
+display_restoreatexit yes
+display_restoreatgame yes
+
+
+favorites "Favorites"
+favorites_dir favlist
+favorites_filtertype no
+icon_space 43
+idle_exit_time 0
+idle_exit_type normal
+
+include 
+input_hotkey yes
+
+mame_history none
+mame_info none
+menu_pos 619 16
+
+
+
+
+
+
+
+menu_systems_font_color 
+menu_systems_font_color_select 
+menu_systems_font_size 
+menu_systems_help 
+menu_systems_icons 
+menu_systems_start 
+misc_exit normal
+
+
+
+
+
+mouse_axis_invert none
+mouse_delta 100
+rem_selected yes
+romset_type non-merged
+sound_background_begin none
+sound_background_end none
+sound_background_loop none
+sound_background_loop_dir none
+sound_background_start none
+sound_background_stop none
+sound_buffer 0.1
+sound_foreground_begin none
+sound_foreground_end none
+sound_foreground_start none
+sound_foreground_stop none
+sound_latency 0.1
+sound_samplerate 44100
+sound_volume -20
+
+ui_bottombar yes
+ui_clip single
+ui_color help 000000 ffffff
+ui_color help_tag 247ef0 ffffff
+ui_color submenu_bar 247ef0 ffffff
+ui_color submenu_item 000000 ffffff
+ui_color submenu_item_select 000000 afffff
+ui_color submenu_hidden 808080 ffffff
+ui_color submenu_hidden_select 808080 afffff
+ui_color menu_item 000000 ffffff
+ui_color menu_hidden 808080 ffffff
+ui_color menu_tag 247ef0 ffffff
+ui_color menu_item_select 000000 afffff
+ui_color menu_hidden_select 808080 afffff
+ui_color menu_tag_select 247ef0 afffff
+ui_color bar 000000 ffffff
+ui_color bar_tag 247ef0 ffffff
+ui_color bar_hidden 808080 ffffff
+ui_color grid 247ef0 ffffff
+ui_color backdrop 000000 808080
+ui_color icon ffffff ffffff
+ui_color cursor 808080 ffffff
+
+ui_console no
+ui_exit none
+ui_font auto
+ui_fontsize auto
+ui_game snap
+ui_gamemsg "Loading"
+ui_help none
+ui_menukey yes
+ui_skipbottom 0
+ui_skipleft 0
+ui_skipright 0
+ui_skiptop 0
+ui_startup none
+ui_topbar yes
+ui_translucency 0.6
+
+arcade/mode layout
+cps/mode layout
+neogeo/mode layout
+all_games/fighter/menu_pos 13 0
+fighter/type_include "-LISTA COMPLETA-"
+fighter/type_include "EXCLUIDOS"
+fighter/type_include "ADULTOS"
+fighter/type_include "BIOS"
+
+taito/type_include "-LISTA COMPLETA-"
+taito/type_include "EXCLUIDOS"
+taito/type_include "ADULTOS"
+taito/type_include "BIOS"
+
+pcgames/type_include "-LISTA COMPLETA-"
+psx1/type_include "-LISTA COMPLETA-"
+psx1/type_include "EXCLUIDOS"
+psx1/type_include "ADULTOS"
+psx1/type_include "BIOS"
+
+psx2/type_include "-LISTA COMPLETA-"
+psx2/type_include "EXCLUIDOS"
+psx2/type_include "ADULTOS"
+psx2/type_include "BIOS"
+
+snes/type_include "-LISTA COMPLETA-"
+snes/type_include "EXCLUIDOS"
+snes/type_include "ADULTOS"
+snes/type_include "BIOS"
+
+gb/type_include "-LISTA COMPLETA-"
+gb/type_include "EXCLUIDOS"
+gb/type_include "ADULTOS"
+gb/type_include "BIOS" 
+
+menu_systems/sort name
+arcade/sort name
+capcom/sort name
+neogeo/sort name
+jogos_de_nave/sort name
+jogos_de_luta/sort name
+taito_type_x/sort name
+jogos_de_computador/sort name
+playstation_1/sort name
+playstation_2/sort name
+super_nintendo/sort name
+gameboy/sort name
+gameboy_color/sort name
+megadrive/sort name
+mastersystem/sort name
+nintendo_64/sort name
+psp/sort name
+nintendinho/sort name
+atari2600/sort name
+atari7800/sort name
+turbografx16/sort name
+nintendo_wii/sort name
+all_games/super_nintendo/menu_pos 79 11
+jogos_de_luta/type_include "-LISTA COMPLETA-"
+nintendo_wii/type_include "-LISTA COMPLETA-"
+nintendo_wii/type_include "EXCLUIDOS"
+nintendo_wii/type_include "ADULTOS"
+nintendo_wii/type_include "BIOS"
+supernintendo/mode layout
+playstation2/mode layout
+menu_systems/mode layout
+hackers/mode layout
+menu_systems/sound_volume 0
+arcade/sound_volume 0
+capcom/sound_volume 0
+neogeo/sound_volume 0
+jogosdenave/sound_volume 0
+jogosdeluta/sound_volume 0
+taitotypex/sound_volume 0
+jogosdecomputador/sound_volume 0
+playstation1/sound_volume 0
+playstation2/sound_volume 0
+supernintendo/sound_volume 0
+gameboy/sound_volume 0
+gameboycolor/sound_volume 0
+gameboyadvance/sound_volume 0
+megadrive/sound_volume 0
+mastersystem/sound_volume 0
+sega32x/sound_volume 0
+hackers/sound_volume 0
+nintendo64/sound_volume 0
+psp/sound_volume 0
+nintendinho/sound_volume 0
+atari2600/sound_volume 0
+atari7800/sound_volume 0
+turbografx16/sound_volume 0
+nintendowii/sound_volume 0
+nintendowiiu/sound_volume 0
+security_exit no
+all_games/sega32x/menu_pos 0 2
+all_games/dreamcast/menu_pos 3 12
+all_games/megadrive/menu_pos 10 6
+all_games/turbografx16/menu_pos 68 10
+jogosdecomputador/mode layout
+all_games/nintendo64/menu_pos 97 3
+all_games/psp/menu_pos 0 17
+all_games/gameboyadvance/menu_pos 283 14
+gameboy/mode layout
+all_games/nintendowii/menu_pos 347 7
+playstation1/mode layout
+turbografx16/mode layout
+all_games/atari2600/menu_pos 0 2
+all_games/gameboy/menu_pos 0 3
+all_games/hackers/menu_pos 0 9
+all_games/gameboycolor/menu_pos 14 9
+all_games/nintendowiitriforce/menu_pos 0 2
+menu_systems/menu_pos 17 0
+all_games/playstation1/menu_pos 25 13
+all_games/taitotypex/menu_pos 0 5
+all_games/jogosdecomputador/menu_pos 0 3
+all_games/supernintendo/menu_pos 619 16
+favorites_include "All Games"
+type_include "-LISTA COMPLETA-"
+menu_systems_attrib missing exclude
+menu_systems_attrib clone exclude
+arcade/type_include "-LISTA COMPLETA-"
+capcom/type_include "-LISTA COMPLETA-"
+neogeo/type_include "-LISTA COMPLETA-"
+taitotypex/type_include "-LISTA COMPLETA-"
+taitotypex/type_include "ADULTOS"
+taitotypex/type_include "BIOS"
+taitotypex/type_include "EXCLUIDOS"
+dreamcast/type_include "-LISTA COMPLETA-"
+emulator_include "SuperNintendo"
+type "-LISTA COMPLETA-"
+type "ADULTOS"
+type "BIOS"
+type "EXCLUIDOS"
+emulator_attrib "ARCADE" missing exclude
+emulator_attrib "ARCADE" clone exclude
+emulator_attrib "CAPCOM" missing exclude
+emulator_attrib "CAPCOM" clone exclude
+emulator_attrib "NEOGEO" missing exclude
+emulator_attrib "NEOGEO" clone exclude
+emulator_attrib "JogosDeNave" missing exclude
+emulator_attrib "JogosDeNave" clone exclude
+emulator_attrib "JogosDeLuta" missing exclude
+emulator_attrib "JogosDeLuta" clone exclude
+emulator_attrib "TAITOTYPEX" missing exclude
+emulator_attrib "TAITOTYPEX" clone exclude
+emulator_attrib "JogosDeComputador" missing exclude
+emulator_attrib "JogosDeComputador" clone exclude
+emulator_attrib "HACKERS" missing exclude
+emulator_attrib "HACKERS" clone exclude
+emulator_attrib "Playstation1" missing exclude
+emulator_attrib "Playstation1" clone exclude
+emulator_attrib "Playstation2" missing exclude
+emulator_attrib "Playstation2" clone exclude
+emulator_attrib "PSP" missing exclude
+emulator_attrib "PSP" clone exclude
+emulator_attrib "SuperNintendo" missing exclude
+emulator_attrib "SuperNintendo" clone exclude
+emulator_attrib "NINTENDO64" missing exclude
+emulator_attrib "NINTENDO64" clone exclude
+emulator_attrib "Gameboy" missing exclude
+emulator_attrib "Gameboy" clone exclude
+emulator_attrib "GameboyColor" missing exclude
+emulator_attrib "GameboyColor" clone exclude
+emulator_attrib "GameboyAdvance" missing exclude
+emulator_attrib "GameboyAdvance" clone exclude
+emulator_attrib "Nintendinho" missing exclude
+emulator_attrib "Nintendinho" clone exclude
+emulator_attrib "NintendoWII" missing exclude
+emulator_attrib "NintendoWII" clone exclude
+emulator_attrib "NintendoWIITriforce" missing exclude
+emulator_attrib "NintendoWIITriforce" clone exclude
+emulator_attrib "NintendoWIIU" missing exclude
+emulator_attrib "NintendoWIIU" clone exclude
+emulator_attrib "MEGADRIVE" missing exclude
+emulator_attrib "MEGADRIVE" clone exclude
+emulator_attrib "MASTERSYSTEM" missing exclude
+emulator_attrib "MASTERSYSTEM" clone exclude
+emulator_attrib "SEGA32X" missing exclude
+emulator_attrib "SEGA32X" clone exclude
+emulator_attrib "DREAMCAST" missing exclude
+emulator_attrib "DREAMCAST" clone exclude
+emulator_attrib "ATARI2600" missing exclude
+emulator_attrib "ATARI2600" clone exclude
+emulator_attrib "ATARI7800" missing exclude
+emulator_attrib "ATARI7800" clone exclude
+emulator_attrib "TURBOGRAFX16" missing exclude
+emulator_attrib "TURBOGRAFX16" clone exclude
+game "ARCADE/1941" "" "" 174 0 ""
+game "ARCADE/1942" "" "" 28 0 ""
+game "ARCADE/1943" "" "" 53 0 ""
+game "ARCADE/airbustr" "" "" 45 0 ""
+game "ARCADE/ajax" "" "" 17 0 ""
+game "ARCADE/aodk" "" "" 112 0 ""
+game "ARCADE/apache3" "" "" 30 0 ""
+game "ARCADE/armedf" "" "" 31 0 ""
+game "ARCADE/kf2k2mp" "" "" 264 0 ""
+game "ARCADE/kf2k2mp2" "" "" 4216 0 ""
+game "ARCADE/kf2k2pla" "" "" 17 0 ""
+game "ARCADE/kf2k2pls" "" "" 559 0 ""
+game "ARCADE/kf2k3bla" "" "" 25 0 ""
+game "ARCADE/kf2k3pl" "" "" 19 0 ""
+game "ARCADE/kinst" "" "" 56 0 ""
+game "ARCADE/kinst2" "" "" 32 0 ""
+game "ARCADE/kof2000" "" "" 21 0 ""
+game "ARCADE/kof2001h" "" "" 299 0 ""
+game "ARCADE/kof2003" "" "" 168 0 ""
+game "ARCADE/kof2k4se" "" "" 20 0 ""
+game "ARCADE/kof94" "" "" 30 0 ""
+game "ARCADE/kof95" "" "" 31 0 ""
+game "ARCADE/kof96h" "" "" 60 0 ""
+game "ARCADE/kof97pls" "" "" 455 0 ""
+game "ARCADE/kof98" "" "" 24 0 ""
+game "ARCADE/kof99" "" "" 22 0 ""
+game "ARCADE/kog" "" "" 73 0 ""
+game "ARCADE/kov" "" "" 43 0 ""
+game "ARCADE/mayday" "" "" 28 0 ""
+game "ARCADE/mk" "" "" 497 0 ""
+game "ARCADE/mk3" "" "" 54 0 ""
+game "ARCADE/moonwar" "" "" 32 0 ""
+game "ARCADE/mshvsf" "" "" 640 0 ""
+game "ARCADE/mvsc" "" "" 241 0 ""
+game "ARCADE/nitd" "" "" 50 0 ""
+game "ARCADE/raiden" "" "" 150 0 ""
+game "ARCADE/rfjet" "" "" 374 0 ""
+game "ARCADE/sfexa" "" "" 86 0 ""
+game "ARCADE/sfiii2n" "" "" 55 0 ""
+game "ARCADE/sonicwi2" "" "" 36 0 ""
+game "ARCADE/sonicwi3" "" "" 158 0 ""
+game "ARCADE/ssmissin" "" "" 17 0 ""
+game "ARCADE/stdragon" "" "" 31 0 ""
+game "ARCADE/tekken2" "" "" 36 0 ""
+game "ARCADE/tekken3" "" "" 304 0 ""
+game "ARCADE/timesold" "" "" 40 0 ""
+game "ATARI2600/3-d tic-tac-toe (1980) (atari, carol shaw - sears) (cx2618 - 49-75123) ~" "" "" 0 0 ""
+game "ATARI2600/3-d tic-tac-toe (1980) (atari, carol shaw) (cx2618, cx2618p) (pal)" "" "" 0 0 ""
+game "ATARI7800/ace of aces" "" "" 38 0 ""
+game "ATARI7800/asteroids" "" "" 11 0 ""
+game "ATARI7800/fight night" "" "" 18 0 ""
+game "CAPCOM/kof2002" "" "" 23 0 ""
+game "CAPCOM/mslug3n" "" "EXCLUIDOS" 0 0 ""
+game "CAPCOM/vsav" "" "" 137 0 ""
+game "CAPCOM/wof" "" "" 0 0 ""
+game "CAPCOM/xmcota" "" "" 39 0 ""
+game "CAPCOM/xmvsf" "" "" 0 0 ""
+game "DREAMCAST/alice's mom's rescue (world) (unl)" "" "" 44 0 ""
+game "DREAMCAST/cool herders (world) (unl)" "" "" 99 0 ""
+game "DREAMCAST/dux (world) (unl)" "" "" 17 0 ""
+game "DREAMCAST/dux - version 1.5 (world) (unl)" "" "" 9 0 ""
+game "DREAMCAST/fast striker (world) (unl)" "" "" 38 0 ""
+game "DREAMCAST/last hope - pink bullets (world) (unl)" "" "" 81 0 ""
+game "DREAMCAST/neo xyx (world) (unl)" "" "" 19 0 ""
+game "DREAMCAST/record of lodoss war (usa)" "" "" 146 0 ""
+game "DREAMCAST/sturmwind (world) (unl)" "" "" 44 0 ""
+game "DREAMCAST/volgarr the viking (world) (unl)" "" "" 38 0 ""
+game "Gameboy/2nd space (asia) (unl)" "" "" 184 0 ""
+game "Gameboy/[bios] nintendo game boy boot rom (world)" "" "" 15 0 ""
+game "Gameboy/alleyway (world)" "" "" 121 0 ""
+game "Gameboy/amazing penguin (usa, europe)" "" "" 66 0 ""
+game "Gameboy/amida (japan)" "" "" 12 0 ""
+game "Gameboy/artic zone (asia) (unl)" "" "" 0 0 ""
+game "Gameboy/battleship (usa, europe)" "" "" 163 0 ""
+game "Gameboy/captain tsubasa j - zenkoku seiha e no chousen (japan)" "" "" 75 0 ""
+game "Gameboy/jeopardy! - sports edition (usa)" "" "" 15 0 ""
+game "Gameboy/zoop (usa, europe)" "" "" 0 0 ""
+game "GameboyAdvance/007 - everything or nothing (usa, europe) (en,fr,de)" "" "" 25 0 ""
+game "GameboyAdvance/2 disney games - disney sports - football + disney sports - skateboarding (europe) (en,fr,de,es,it)" "" "" 0 0 ""
+game "GameboyAdvance/2 game pack! - matchbox missions - emergency response + air, land and sea rescue (usa)" "" "" 12 0 ""
+game "GameboyAdvance/dragon ball z - the legacy of goku (usa)" "" "" 175 0 ""
+game "GameboyAdvance/yu-gi-oh! - ultimate masters - world championship tournament 2006 (usa) (en,ja,fr,de,es,it)" "" "" 145 0 ""
+game "GameboyAdvance/yu-gi-oh! - world championship tournament 2004 (usa) (en,ja,fr,de,es,it)" "" "" 46 0 ""
+game "GameboyColor/007 - the world is not enough (usa, europe)" "" "" 0 0 ""
+game "GameboyColor/102 dalmatians - puppies to the rescue (usa, europe)" "" "" 0 0 ""
+game "GameboyColor/1942 (usa)" "" "" 0 0 ""
+game "GameboyColor/3-d ultra pinball - thrillride (usa)" "" "" 40 0 ""
+game "GameboyColor/arcade hits - moon patrol & spy hunter (usa)" "" "" 29 0 ""
+game "GameboyColor/bust-a-move 4 (usa, europe)" "" "" 97 0 ""
+game "GameboyColor/konami gb collection vol.2 (europe)" "" "" 14 0 ""
+game "HACKERS/3 steps from the hell" "" "" 63 0 ""
+game "HACKERS/another super mario 3d" "" "" 39 0 ""
+game "HACKERS/bloki (tetris clone)" "" "" 36 0 ""
+game "HACKERS/bomber mario" "" "" 539 0 ""
+game "HACKERS/bruce lee" "" "" 19 0 ""
+game "HACKERS/bubble bobble (improvement)" "" "" 0 0 ""
+game "HACKERS/luigi and the new quest" "" "" 0 0 ""
+game "HACKERS/master smash brothers" "" "" 0 0 ""
+game "HACKERS/more super mario bras. 2" "" "" 14 0 ""
+game "HACKERS/roll chan" "" "" 22 0 ""
+game "HACKERS/roll chan 6 (classic edition)" "" "" 25 0 ""
+game "HACKERS/roll chan 6 (mega man 8 edition)" "" "" 27 0 ""
+game "HACKERS/ronaldinho soccer 98" "" "" 14 0 ""
+game "HACKERS/roy's armada" "" "" 13 0 ""
+game "HACKERS/ski master" "" "" 10 0 ""
+game "HACKERS/sonic drift 2 (game gear to master system conversion)" "" "" 11 0 ""
+game "HACKERS/sonic the hedgehog (fm sound)" "" "" 0 0 ""
+game "HACKERS/sonic the hedgehog (improvement)" "" "" 0 0 ""
+game "HACKERS/sonic the hedgehog - triple trouble (game gear to master system conversion)" "" "" 15 0 ""
+game "HACKERS/sonic-boy 3 - eggman's room" "" "" 18 0 ""
+game "HACKERS/super mario - bowser's shinedown" "" "" 24 0 ""
+game "HACKERS/super mario - robotical trouble" "" "" 16 0 ""
+game "HACKERS/super mario - the crater" "" "" 23 0 ""
+game "HACKERS/super mario 64 -  hidden stars" "" "" 18 0 ""
+game "HACKERS/super mario 64 -  starrevenge 2.5d - seaside town" "" "" 44 0 ""
+game "HACKERS/super mario 64 -  starrevenge 3 - mario on an saoire 64" "" "" 359 0 ""
+game "HACKERS/super mario 64 -  starrevenge 8 - scepter of hope" "" "" 58 0 ""
+game "HACKERS/super mario 64 -  starrevenge redone" "" "" 24 0 ""
+game "HACKERS/super mario 64 -  the green stars" "" "" 28 0 ""
+game "HACKERS/super mario 64 -  the wonderous worlds" "" "" 34 0 ""
+game "HACKERS/super mario 64 - die rache der anderen - part 1" "" "" 26 0 ""
+game "HACKERS/super mario 64 - it's a crash!" "" "" 51 0 ""
+game "HACKERS/super mario 64 - sky stories" "" "" 45 0 ""
+game "HACKERS/super mario 64 - the missing stars" "" "" 30 0 ""
+game "HACKERS/super mario 84" "" "" 68 0 ""
+game "HACKERS/super mario advance 2 - super mario world (color restoration)" "" "" 12 0 ""
+game "HACKERS/super mario advance 2 - super mario world (voice removed)" "" "" 151 0 ""
+game "HACKERS/super mario bros. - yoshi's quest" "" "" 192 0 ""
+game "HACKERS/super mario star road final - deluxe edition" "" "" 67 0 ""
+game "HACKERS/super metroid 2015" "" "" 50 0 ""
+game "HACKERS/super pika land ultra - chocolate version" "" "" 0 0 ""
+game "HACKERS/super street fighter ii turbo revival (bug fixes)" "" "" 28 0 ""
+game "HACKERS/tetris zero" "" "" 38 0 ""
+game "HACKERS/the ruin" "" "" 15 0 ""
+game "HACKERS/this hack needs a name" "" "" 236 0 ""
+game "HACKERS/title" "" "" 0 0 ""
+game "HACKERS/toad's world" "" "" 9 0 ""
+game "HACKERS/versus" "" "" 34 0 ""
+game "HACKERS/waimanu scary monsters saga" "" "" 0 0 ""
+game "HACKERS/zillion (text fix)" "" "" 21 0 ""
+game "JogosDeComputador/bud spencer and terence hill slaps and beans" "" "" 59 0 ""
+game "JogosDeComputador/celeste" "" "" 137 0 ""
+game "JogosDeComputador/gta iii" "" "" 276 0 ""
+game "JogosDeComputador/gta san andreas" "" "" 400 0 ""
+game "JogosDeComputador/gta vice city" "" "" 360 0 ""
+game "JogosDeComputador/need for speed carbon" "" "" 267 0 ""
+game "JogosDeComputador/need for speed most wanted" "" "" 250 0 ""
+game "JogosDeComputador/shank 2" "" "" 42 0 ""
+game "JogosDeComputador/turtle" "" "" 906 0 ""
+game "JogosDeLuta/aodk" "" "" 11 0 ""
+game "JogosDeLuta/aof" "" "" 0 0 ""
+game "JogosDeLuta/aof2" "" "" 12 0 ""
+game "JogosDeLuta/aof3" "" "" 9 0 ""
+game "JogosDeLuta/asurabld" "" "" 22 0 ""
+game "JogosDeLuta/breakrev" "" "" 9 0 ""
+game "JogosDeLuta/daraku" "" "" 192 0 ""
+game "JogosDeLuta/darkedge" "" "" 0 0 ""
+game "JogosDeLuta/drgnmst" "" "" 0 0 ""
+game "JogosDeLuta/dstlk" "" "" 9 0 ""
+game "JogosDeLuta/fatfury1" "" "" 9 0 ""
+game "JogosDeLuta/kabukikl" "" "" 9 0 ""
+game "JogosDeLuta/kf2k2mp2" "" "" 610 0 ""
+game "JogosDeLuta/kf2k2pls" "" "" 62 0 ""
+game "JogosDeLuta/kinst" "" "" 26 0 ""
+game "JogosDeLuta/kof2001h" "" "" 91 0 ""
+game "JogosDeLuta/kof94" "" "" 17 0 ""
+game "JogosDeLuta/mk" "" "" 634 0 ""
+game "JogosDeLuta/mk3" "" "" 36 0 ""
+game "JogosDeLuta/ragnagrd" "" "" 148 0 ""
+game "JogosDeLuta/samsho4" "" "" 43 0 ""
+game "JogosDeLuta/sf2accp2" "" "" 44 0 ""
+game "JogosDeLuta/sf2ce" "" "" 23 0 ""
+game "JogosDeLuta/sf2koryu" "" "" 183 0 ""
+game "JogosDeLuta/sf2m4" "" "" 49 0 ""
+game "JogosDeLuta/sf2m5" "" "" 133 0 ""
+game "JogosDeLuta/sf2m6" "" "" 71 0 ""
+game "JogosDeLuta/sf2yyc" "" "" 87 0 ""
+game "JogosDeLuta/umk3" "" "" 162 0 ""
+game "JogosDeLuta/vhunt2" "" "" 28 0 ""
+game "JogosDeLuta/xmcota" "" "" 30 0 ""
+game "JogosDeNave/1941" "" "" 9 0 ""
+game "JogosDeNave/ssmissin" "" "" 18 0 ""
+game "MASTERSYSTEM/ace of aces (ue) [!]" "" "" 163 0 ""
+game "MEGADRIVE/3 ninjas kick back (usa)" "" "" 10 0 ""
+game "MEGADRIVE/air buster (usa)" "" "" 17 0 ""
+game "MEGADRIVE/alex kidd in the enchanted castle (usa)" "" "" 114 0 ""
+game "MEGADRIVE/daffy duck in hollywood (europe) (en,fr,de,es,it)" "" "" 11 0 ""
+game "MEGADRIVE/dahna (korea)" "" "" 0 0 ""
+game "MEGADRIVE/daisenpuu ~ twin hawk (japan, europe)" "" "" 13 0 ""
+game "MEGADRIVE/flink (europe)" "" "" 13 0 ""
+game "MEGADRIVE/flintstones, the (usa)" "" "" 21 0 ""
+game "MEGADRIVE/forgotten worlds (world) (v1.1)" "" "" 28 0 ""
+game "MEGADRIVE/strider (usa, europe)" "" "" 120 0 ""
+game "MEGADRIVE/strider returns - journey from darkness (usa)" "" "" 38 0 ""
+game "MEGADRIVE/striker (europe)" "" "" 11 0 ""
+game "MEGADRIVE/subterrania (usa)" "" "" 20 0 ""
+game "MEGADRIVE/super baseball 2020 (usa, europe)" "" "" 29 0 ""
+game "MEGADRIVE/super battletank - war in the gulf (usa)" "" "" 0 0 ""
+game "NEOGEO/3countb" "" "" 56 0 ""
+game "NEOGEO/aof3" "" "" 30 0 ""
+game "NEOGEO/garou" "" "" 17 0 ""
+game "NEOGEO/kf2k2mp2" "" "" 272 0 ""
+game "NEOGEO/kof2002" "" "" 578 0 ""
+game "NEOGEO/matrim" "" "" 49 0 ""
+game "NEOGEO/mslug5" "" "" 51 0 ""
+game "NINTENDO64/007 - goldeneye (usa)" "" "" 97 0 ""
+game "NINTENDO64/007 - the world is not enough (europe) (en,fr,de)" "" "" 76 0 ""
+game "NINTENDO64/007 - the world is not enough (usa)" "" "" 43 0 ""
+game "NINTENDO64/64 de hakken!! tamagotchi - minna de tamagotchi world (japan)" "" "" 18 0 ""
+game "NINTENDO64/aerofighters assault (usa)" "" "" 15 0 ""
+game "NINTENDO64/aidyn chronicles - the first mage (usa)" "" "" 13 0 ""
+game "NINTENDO64/air boarder 64 (europe)" "" "" 101 0 ""
+game "NINTENDO64/asteroids hyper 64 (usa)" "" "" 98 0 ""
+game "NINTENDO64/castlevania - legacy of darkness (usa)" "" "" 25 0 ""
+game "NINTENDO64/centre court tennis (europe)" "" "" 45 0 ""
+game "NINTENDO64/mario party (usa)" "" "" 23 0 ""
+game "NINTENDO64/nfl blitz - special edition (usa)" "" "" 12 0 ""
+game "NINTENDO64/pokemon puzzle league (usa)" "" "" 22 0 ""
+game "NINTENDO64/sim city 2000 (japan)" "" "" 15 0 ""
+game "NINTENDO64/star wars episode i - racer (usa)" "" "" 14 0 ""
+game "NINTENDO64/starcraft 64 (usa)" "" "" 61 0 ""
+game "NINTENDO64/starshot - space circus fever (usa) (en,fr,es)" "" "" 80 0 ""
+game "NINTENDO64/super mario 64 (japan) (rev a) (shindou edition)" "" "" 76 0 ""
+game "NINTENDO64/super mario 64 (usa)" "" "" 126 0 ""
+game "Nintendinho/10-yard fight" "" "" 77 0 ""
+game "Nintendinho/amagon" "" "" 0 0 ""
+game "Nintendinho/jackal" "" "" 0 0 ""
+game "Nintendinho/jackie chan's action kung fu" "" "" 25 0 ""
+game "Nintendinho/jajamaru gekimaden - maboroshi no kinmajou" "" "" 37 0 ""
+game "Nintendinho/mahjong taikai" "" "" 0 0 ""
+game "Nintendinho/super spike v'ball" "" "" 0 0 ""
+game "Nintendinho/thundercade" "" "" 0 0 ""
+game "Nintendinho/tiger-heli" "" "" 0 0 ""
+game "Nintendinho/tiles of fate" "" "" 21 0 ""
+game "Nintendinho/world boxing" "" "" 0 0 ""
+game "Nintendinho/wrath of the black manta" "" "" 0 0 ""
+game "Nintendinho/yie ar kung-fu" "" "" 0 0 ""
+game "Nintendinho/yoshi" "" "" 9 0 ""
+game "Nintendinho/yoshi's cookie" "" "" 10 0 ""
+game "Nintendinho/ys" "" "" 10 0 ""
+game "Nintendinho/ys ii - ancient ys vanished - the final chapter" "" "" 25 0 ""
+game "Nintendinho/ys iii - wanderers from ys" "" "" 0 0 ""
+game "Nintendinho/zelda ii - the adventure of link" "" "" 0 0 ""
+game "Nintendinho/zoids mokushiroku" "" "" 0 0 ""
+game "Nintendinho/zombie hunter" "" "" 0 0 ""
+game "Nintendinho/zombie nation" "" "" 0 0 ""
+game "NintendoWII/101-in-1 explosive megamix (usa)" "" "" 95 0 ""
+game "NintendoWII/2 fast 4 gnomz (usa)" "" "" 138 0 ""
+game "NintendoWII/rush rush rally racing (europe)" "" "" 27 0 ""
+game "NintendoWII/saikyou ginsei mahjong (japan)" "" "" 63 0 ""
+game "NintendoWIITriforce/f-zero ax" "" "" 179 0 ""
+game "NintendoWIITriforce/mario kart arcade gp" "" "" 440 0 ""
+game "NintendoWIITriforce/mario kart arcade gp 2" "" "" 56 0 ""
+game "PSP/4x4 jam (usa)" "" "" 80 0 ""
+game "PSP/ace armstrong vs. the alien scumbags! (usa)" "" "" 47 0 ""
+game "PSP/angry birds (usa)" "" "" 16 0 ""
+game "PSP/arcade pool (usa)" "" "" 0 0 ""
+game "PSP/doodle pool (usa)" "" "" 26 0 ""
+game "PSP/dr. maybee and the adventures of scary girl (usa)" "" "" 0 0 ""
+game "PSP/ducati challenge (usa)" "" "" 23 0 ""
+game "PSP/edge (usa)" "" "" 0 0 ""
+game "PSP/fieldrunners (usa)" "" "" 35 0 ""
+game "PSP/hero of sparta (usa)" "" "" 0 0 ""
+game "PSP/i must run! (usa)" "" "" 92 0 ""
+game "PSP/jetpack joyride (usa)" "" "" 38 0 ""
+game "PSP/let's golf! (usa)" "" "" 18 0 ""
+game "PSP/minisquadron (usa)" "" "" 13 0 ""
+game "PSP/n.o.v.a. near orbit vanguard alliance (usa)" "" "" 0 0 ""
+game "Playstation1/alone in the dark - the new nightmare (usa) disc 1" "" "" 29 0 ""
+game "Playstation1/alone in the dark - the new nightmare (usa) disc 2" "" "" 45 0 ""
+game "Playstation1/bust a groove (usa)" "" "" 25 0 ""
+game "Playstation1/capcom vs. snk - millennium fight 2000 (usa)" "" "" 51 0 ""
+game "Playstation1/crash bandicoot (usa)" "" "" 41 0 ""
+game "Playstation1/crash bandicoot - warped (usa)" "" "" 74 0 ""
+game "Playstation1/crash bandicoot 2 - cortex strikes back (usa)" "" "" 899 0 ""
+game "Playstation1/crash bash (usa)" "" "" 187 0 ""
+game "Playstation1/crash team racing (usa)" "" "" 255 0 ""
+game "Playstation1/dino crisis (usa)" "" "" 111 0 ""
+game "Playstation1/dino crisis 2 (usa)" "" "" 117 0 ""
+game "Playstation1/driver - you are the wheelman (usa)" "" "" 182 0 ""
+game "Playstation1/driver 2 (usa) disc 1" "" "" 27 0 ""
+game "Playstation1/nascar rumble (usa)" "" "" 12 0 ""
+game "Playstation1/resident evil 3 - nemesis (usa)" "" "" 48 0 ""
+game "Playstation1/tom clancy's rainbow six - lone wolf [u] [slus-01473]" "" "" 306 0 ""
+game "Playstation2/beyond good & evil (usa)" "" "" 153 0 ""
+game "Playstation2/cartoon network racing (usa)" "" "" 290 0 ""
+game "Playstation2/castlevania - lament of innocence (usa)" "" "" 102 0 ""
+game "Playstation2/crash bandicoot - the wrath of cortex (usa)" "" "" 221 0 ""
+game "Playstation2/crash tag team racing (usa)" "" "" 320 0 ""
+game "Playstation2/god of war (usa)" "" "" 363 0 ""
+game "Playstation2/god of war ii (usa)" "" "" 28 0 ""
+game "Playstation2/gran turismo 4 (usa)" "" "" 70 0 ""
+game "Playstation2/grand theft auto - san andreas (usa)" "" "" 616 0 ""
+game "Playstation2/grand theft auto - vice city (usa)" "" "" 554 0 ""
+game "Playstation2/grand theft auto iii (usa)" "" "" 524 0 ""
+game "Playstation2/guitar hero encore - rocks the 80s (usa)" "" "" 1055 0 ""
+game "Playstation2/motorstorm arctic edge (usa)" "" "" 484 0 ""
+game "Playstation2/raiden iii (usa)" "" "" 166 0 ""
+game "Playstation2/rpm tuning (europe)" "" "" 225 0 ""
+game "Playstation2/rumble racing (usa)" "" "" 430 0 ""
+game "Playstation2/star wars - super bombad racing (usa)" "" "" 283 0 ""
+game "Playstation2/street fighter alpha anthology (usa)" "" "" 96 0 ""
+game "Playstation2/super bust-a-move (usa)" "" "" 302 0 ""
+game "Playstation2/the king of fighters '94 re-bout" "" "" 401 0 ""
+game "SEGA32X/after burner complete (europe)" "" "" 13 0 ""
+game "SEGA32X/after burner complete ~ after burner (japan, usa)" "" "" 9 0 ""
+game "SEGA32X/amazing spider-man, the - web of fire (usa)" "" "" 48 0 ""
+game "SEGA32X/darxide (europe) (en,fr,de,es)" "" "" 121 0 ""
+game "SEGA32X/metal head (japan, usa) (en,ja)" "" "" 0 0 ""
+game "SuperNintendo/2020 super baseball (usa)" "" "" 11 0 ""
+game "SuperNintendo/7th saga, the (usa)" "" "" 86 0 ""
+game "SuperNintendo/90 minutes - european prime goal (europe)" "" "" 10 0 ""
+game "SuperNintendo/a.s.p. - air strike patrol (usa)" "" "" 166 0 ""
+game "SuperNintendo/acme animation factory (usa)" "" "" 114 0 ""
+game "SuperNintendo/actraiser (usa)" "" "" 76 0 ""
+game "SuperNintendo/actraiser 2 (usa)" "" "" 86 0 ""
+game "SuperNintendo/battletoads & double dragon - the ultimate team (usa)" "" "" 18 0 ""
+game "SuperNintendo/dragon ball z - super butouden (france)" "" "" 12 0 ""
+game "SuperNintendo/dragon ball z - ultime menace (france)" "" "" 46 0 ""
+game "SuperNintendo/dragon view (usa)" "" "" 12 0 ""
+game "SuperNintendo/final fight (usa)" "" "" 30 0 ""
+game "SuperNintendo/hal's hole in one golf (usa)" "" "" 0 0 ""
+game "SuperNintendo/hammerlock wrestling (usa)" "" "" 0 0 ""
+game "SuperNintendo/hardball iii (usa)" "" "" 0 0 ""
+game "SuperNintendo/power instinct (usa)" "" "" 29 0 ""
+game "SuperNintendo/power moves (usa)" "" "" 26 0 ""
+game "SuperNintendo/primal rage (usa)" "" "" 130 0 ""
+game "SuperNintendo/prince of persia (usa)" "" "" 120 0 ""
+game "SuperNintendo/riddick bowe boxing (usa)" "" "" 545 0 ""
+game "SuperNintendo/robocop 3 (usa)" "" "" 111 0 ""
+game "SuperNintendo/robotrek (usa)" "" "" 64 0 ""
+game "SuperNintendo/super bomberman 3 (europe)" "" "" 63 0 ""
+game "SuperNintendo/super goal! 2 (usa)" "" "" 53 0 ""
+game "SuperNintendo/super high impact (usa)" "" "" 10 0 ""
+game "SuperNintendo/super ice hockey (europe)" "" "" 20 0 ""
+game "SuperNintendo/super international cricket (europe)" "" "" 27 0 ""
+game "SuperNintendo/super james pond (usa)" "" "" 58 0 ""
+game "SuperNintendo/super mario all-stars (usa)" "" "" 10 0 ""
+game "SuperNintendo/super mario all-stars + super mario world (usa)" "" "" 22 0 ""
+game "SuperNintendo/super mario kart (usa)" "" "" 276 0 ""
+game "SuperNintendo/super mario rpg - legend of the seven stars (usa)" "" "" 73 0 ""
+game "SuperNintendo/super mario world (usa)" "" "" 1168 0 ""
+game "SuperNintendo/super mario world 2 - yoshi's island (usa)" "" "" 38 0 ""
+game "SuperNintendo/super mario world 2 - yoshi's island (usa) (rev 1)" "" "" 44 0 ""
+game "SuperNintendo/tecmo super bowl iii - final edition (usa)" "" "" 15 0 ""
+game "SuperNintendo/tecmo super nba basketball (usa)" "" "" 120 0 ""
+game "SuperNintendo/teenage mutant ninja turtles - tournament fighters (usa)" "" "" 99 0 ""
+game "SuperNintendo/tiny toon adventures - wacky sports challenge (usa)" "" "" 0 0 ""
+game "SuperNintendo/tko super championship boxing (usa)" "" "" 11 0 ""
+game "SuperNintendo/tom & jerry (usa)" "" "" 38 0 ""
+game "SuperNintendo/uwol - quest for money (world) (unl)" "" "" 10 0 ""
+game "TAITOTYPEX/dragon dance" "" "" 45 0 ""
+game "TAITOTYPEX/elevator action" "" "" 129 0 ""
+game "TAITOTYPEX/raiden iii" "" "" 35 0 ""
+game "TAITOTYPEX/tetris the grand master 3 terror instinct" "" "" 699 0 ""
+game "TAITOTYPEX/tetristhegrandmaster3terrorinstinct" "" "" 1008 0 ""
+game "TURBOGRAFX16/1943 kai (japan)" "" "" 15 0 ""
+game "TURBOGRAFX16/21 emon - mezase hotel ou!! (japan)" "" "" 0 0 ""
+game "TURBOGRAFX16/aero blasters (japan)" "" "" 39 0 ""
+game "TURBOGRAFX16/aero blasters (usa)" "" "" 52 0 ""
+game "TURBOGRAFX16/air zonk (usa)" "" "" 41 0 ""
+game "TURBOGRAFX16/alien crush (usa)" "" "" 38 0 ""
+game "TURBOGRAFX16/bonk's adventure (usa)" "" "" 37 0 ""
+game "TURBOGRAFX16/deep blue - kaitei shinwa (japan)" "" "" 107 0 ""
+game "TURBOGRAFX16/devil crash - naxat pinball (japan)" "" "" 12 0 ""
