@@ -581,7 +581,7 @@ taitotypex/type_include "ADULTOS"
 taitotypex/type_include "BIOS"
 taitotypex/type_include "EXCLUIDOS"
 dreamcast/type_include "-LISTA COMPLETA-"
-emulator_include "TAITOTYPEX"
+emulator_include "CAPCOM"
 type "-LISTA COMPLETA-"
 type "ADULTOS"
 type "BIOS"
@@ -640,3 +640,4 @@ emulator_attrib "ATARI7800" missing exclude
 emulator_attrib "ATARI7800" clone exclude
 emulator_attrib "TURBOGRAFX16" missing exclude
 emulator_attrib "TURBOGRAFX16" clone exclude
+game "CAPCOM/sf2" "" "" 0 0 ""
