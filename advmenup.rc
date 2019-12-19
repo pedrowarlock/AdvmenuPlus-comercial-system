@@ -5,13 +5,13 @@ device_video auto
 device_video_interlace no
 #*************************************************************
 #FULLSCREEN / WINDOW
-device_video_output fullscreen
-#device_video_output window
+#device_video_output fullscreen
+device_video_output window
 #*************************************************************
 misc_quiet yes
 misc_hidedesktop yes
 misc_splash none
-menu_systems yes
+menu_systems no
 event_mode fast
 event_repeat 150 20
 #*************************************************************

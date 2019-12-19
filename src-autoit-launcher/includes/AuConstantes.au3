@@ -46,11 +46,11 @@ Global $___VERSION 	      		 = "1.0.0.9"
 Global $___COMPANYNAME 	  		 = "WDiversoes"
 Global $___LEGALCOPYRIGHT 		 = "©WDiversoes Company. All rights reserved."
 
-Global $__EMAIL 				 = BinaryToString("0x576469766572736F657340676D61696C2E636F6D") ;Wdiversoes@gmail.com
-Global $__TELEF 				 = BinaryToString("0x2B35352832312939363534362D35303934")		;+55(21)9654-65094
-Global $__FACE  				 = BinaryToString("0x40506564726F5761726C6F636B")			    ;@PedroWarlock
+Global $__EMAIL 				 = BinaryToString("0x576469766572736F657340676D61696C2E636F6D")
+Global $__TELEF 				 = BinaryToString("0x2B35352832312939363534362D35303934")
+Global $__FACE  				 = BinaryToString("0x40506564726F5761726C6F636B")
 
-
+_CONST_REGIST_PAGE(True)
 
 Func _JOYTOKEY_INIT($iComandLine = "")
 	Local $iJoytokey = _CONST_REGIST_PAGE() & $__JOYTOKEY_FILE

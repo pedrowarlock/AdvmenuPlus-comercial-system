@@ -3,7 +3,7 @@
 #AutoIt3Wrapper_Icon=icon.ico
 #AutoIt3Wrapper_Outfile=..\..\GameLauncher.Exe
 #AutoIt3Wrapper_Res_Description=GameLauncher2019
-#AutoIt3Wrapper_Res_Fileversion=5.0.0.852
+#AutoIt3Wrapper_Res_Fileversion=5.0.0.853
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=GameLauncher
 #AutoIt3Wrapper_Res_ProductVersion=5.0.0.1
@@ -27,7 +27,7 @@ ProcessSetPriority(@AutoItPID, 5)
 
 Opt("MustDeclareVars", 1)       ;Obriga todas variaveis ter declarações
 
-_CONST_REGIST_PAGE(True)
+
 
 If _Singleton("LauncherBox", 1) = 0 Then
 	_CALL_WRITE_LOG("!(ERRO) - Programa já em execução")

@@ -1,88 +1,96 @@
 ######################################################
-# Layout: "Wdiversões - PedroWarlock."
-# AdvMenuPlus: >= 2016.04.19
-# Resolucion: 640x480
-# Creador/adaptador: PEDROWARLOCK
+# Layout "By Linderson" - Tema Comic Book  10/07/2018
+#
+# daesdae 
 ######################################################
-# ORIENTACION - MODO DA TELA QUE SERÁ MOSTRADO O EMULADOR -VERTICAL/HORIZONTAL
+
+# ORIENTACION
 ###############
 orientation 
 
-# HELP - IMAGEM OU MNG QUE SERÁ MOSTRADO NO HELP DO EMULADOR
+# FONDO
+#########
+background_image_path ".\ComicBook3\skin.png"
+background_color 
+
+# HELP
 ########
-help_image_path ".\Gamestyle\HelpMenu.png" 
+help_image_path none
 
-# START - IMAGEM OU MNG QUE SERÁ MOSTRADO ANTES DE CARREGAR O JOGO
+# START
 #########
-start_image_path 
-
-# FUNDO
-#########
-background_image_path ".\Gamestyle\SHUMPS.png"
-background_color 000000
-
-# CONFIGURAÇÃO DA LISTA DE SELEÇÃO
-###########################################
-list_pos_size "40 97 314 447"
-list_font_path "impact.ttf"
-list_font_size 18
-list_font_color 20202F
-list_font_select_color fefefe 10A239 0.0
-list_rows 18
-list_cols 1
-list_selected_pos 
+start_image_path none
+#515
+# Lista do jogos
+###########
+list_pos_size 82 136 368 391
+list_font_path Audiowide-Regular.otf
+list_font_size 16
+list_font_color white
+list_font_select_color 00FF40 666666 1.0
+list_rows 11
+list_cols 
+list_selected_pos
 list_align left
-#list_diagonal 5
+list_diagonal 10
+
 
 # SCROLL - BARRA DE DESPLAZAMIENTO VERTICAL
 ###########################################
-scroll_pos_size 358 97 3 447
-scroll_color 00008C
+scroll_pos_size
+scroll_color
 
-# JANELA QUE MOSTRA OS SNAPS DO JOGO
+# IMAGENES DE JUEGO SELECCIONADO
 ##################################
-#win_cabinets 0 0 0 0
-win_snaps 389 147 384 384
-#win_color none
- 
+
+#videos# 
+#******* 	(Y)    (X)    (H)     (W)
+win_snaps 	452 	115   328     381 
+
+#***********************************
+#Y: Direita / Esquerda 
+#X: Cima / Baixo
+#H: Redimensionar p/ Direita / Esquerda 
+#W: Redimensionar p/ Cima / Baixo
+
+
+#************************************
+
+# BARRA QUE MOSTRA NOME DA ROM COMPLETA
+###############################
+bar_info_1 433 505 361 18
+bar_info_1_font "BEBAS.TTF"
+bar_info_1_color 00FF40
+bar_info_1_text "%description%"
+bar_info_1_align center
 
 # BARRA QUE MOSTRA NOME DO EMULADOR
 ###############################
-bar_info_1 5 575 583 18
-bar_info_1_font "impact.ttf"
-bar_info_1_color 313140
-bar_info_1_text %emulator%
-bar_info_1_align left
-
-
-# CONTADOR GERAL
-###############################
-bar_info_2 35 548 75 14
+bar_info_2 88 553 350 25
 bar_info_2_font "impact.ttf"
-bar_info_2_color BDBDAD
-bar_info_2_text "%contador_geral%"
+bar_info_2_color ffffff
+bar_info_2_text %emulator%
 bar_info_2_align left
-
-
-# BARRA DE FICHAS/TEMPO
-###############################
-bar_info_3 540 575 150 18
-bar_info_3_font "impact.ttf"
-bar_info_3_color 0036D9
-bar_info_3_text "%fichas_time% "
-bar_info_3_align right
 
 #BARRA QUE MOSTRA O NUMERO DO JOGO SELECIONADO/JOGOS TOTAL
 ###############################
-bar_info_4 269 70 85 14
+bar_info_3 529 28 169 30
+bar_info_3_font "impact.ttf"
+bar_info_3_color fefefe
+bar_info_3_text "%selected% de %games%"
+bar_info_3_align center
+
+# BARRA DE FICHAS/TEMPO
+###############################
+bar_info_4 540 553 150 25
 bar_info_4_font "impact.ttf"
-bar_info_4_color fefefe
-bar_info_4_text "%selected% de %games%"
+bar_info_4_color ffffff
+bar_info_4_text "%fichas_time% "
 bar_info_4_align right
 
 # BARRA DE FICHAS/TEMPO
 ###############################
-bar_info_Coin 685 575 110 18
+bar_info_Coin 685 553 110 25
 bar_info_Coin_font "impact.ttf"
 bar_info_Coin_color 1E9927
 bar_info_Coin_NoCoin_color EF1C21
