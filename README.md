@@ -32,7 +32,8 @@ Numpad 8 = Start Game
 Numpad 9 = Start Game 
 Enter    = Start Game 
 
-
++ Adicionar jogos de Computador ou de TaitoTypeX
+Cole o atalho do jogo para dentro da pasta do jogo referente "jogos/taito" ou "jogos/pcgames"
 
 + Compilar version DOS/Windows:
  MINGW (Windows): 
