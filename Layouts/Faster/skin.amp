@@ -1,0 +1,95 @@
+
+######################################################
+
+# ORIENTACION
+###############
+orientation 
+
+# FONDO
+#########
+background_image_path ./Faster/ARCADE.png
+background_color 
+
+# HELP
+########
+help_image_path none
+
+# START
+#########
+start_image_path none
+#515
+
+# LISTADO
+###########
+list_pos_size 462 132 311 418
+list_font_path zektonbo.ttf
+list_font_size 20
+list_font_color CAE1F7
+list_font_select_color FDAC20 00468C
+list_rows 11
+list_cols 
+list_selected_pos
+list_align left
+list_diagonal 
+
+# SCROLL - BARRA DE DESPLAZAMIENTO VERTICAL
+###########################################
+scroll_pos_size 786 122 11 429
+scroll_color FFFF00
+
+# IMAGEM DO JOGO SELECIONADO
+##################################
+win_snaps 13 175 418 365
+
+
+#BARRA QUE MOSTRA O NUMERO DO JOGO SELECIONADO/JOGOS TOTAL
+###############################
+bar_info_4 442 558 178 27
+bar_info_4_font zektonbo.ttf
+bar_info_4_color 0000D9
+bar_info_4_text "%fichas_time% "
+bar_info_4_align right
+
+# BARRA DE FICHAS/TEMPO
+###############################
+bar_info_Coin 620 558 178 27
+bar_info_Coin_font zektonbo.ttf
+bar_info_Coin_color 1E9927
+bar_info_Coin_NoCoin_color EF1C21
+bar_info_Coin_text "%contador%"
+bar_info_Coin_align left
+
+# BARRAS DE INFORMACION/TEXTO
+###############################
+bar_info_5 212 120 223 27
+bar_info_5_font zektonbo.ttf
+bar_info_5_color CAE1F7
+bar_info_5_text "%selected% / %games%"
+bar_info_5_align center
+
+# BARRAS DE INFORMACION/TEXTO
+###############################
+bar_info_6 12 127 190 16
+bar_info_6_font zektonbo.ttf
+bar_info_6_color CAE1F7
+bar_info_6_text "%type%"
+bar_info_6_align center
+
+# BARRA QUE MOSTRA NOME DO EMULADOR
+###############################
+bar_info_1 5 558 378 27
+bar_info_1_font zektonbo.ttf
+bar_info_1_color FF4D00
+bar_info_1_text %emulator%
+bar_info_1_align left
+
+
+
+# MENU
+########
+menu_font_path "impact.ttf"
+menu_font_size 20
+menu_title_color black FFFFFF
+menu_font_color black FFFFFF
+menu_font_select_color FFFFFF 247ef0
+

@@ -1,0 +1,109 @@
+######################################################
+# Layout "By Linderson" - Tema Comic Book  10/07/2018
+#
+# daesdae 
+######################################################
+
+# ORIENTACION
+###############
+orientation 
+
+# FONDO
+#########
+background_image_path ".\ComicBook4\skin.png"
+background_color 
+
+# HELP
+########
+help_image_path none
+
+# START
+#########
+start_image_path none
+#515
+# Lista do jogos
+###########
+list_pos_size 82 136 368 391
+list_font_path Audiowide-Regular.otf
+list_font_size 16
+list_font_color white
+list_font_select_color 00FF40 666666 1.0
+list_rows 11
+list_cols 
+list_selected_pos
+list_align left
+list_diagonal 10
+
+
+# SCROLL - BARRA DE DESPLAZAMIENTO VERTICAL
+###########################################
+scroll_pos_size
+scroll_color
+
+# IMAGENES DE JUEGO SELECCIONADO
+##################################
+
+#videos# 
+#******* 	(Y)    (X)    (H)     (W)
+win_snaps 	452 	115   328     381 
+
+#***********************************
+#Y: Direita / Esquerda 
+#X: Cima / Baixo
+#H: Redimensionar p/ Direita / Esquerda 
+#W: Redimensionar p/ Cima / Baixo
+
+
+#************************************
+
+# BARRA QUE MOSTRA NOME DA ROM COMPLETA
+###############################
+bar_info_1 433 505 361 18
+bar_info_1_font "BEBAS.TTF"
+bar_info_1_color 00FF40
+bar_info_1_text "%description%"
+bar_info_1_align center
+
+# BARRA QUE MOSTRA NOME DO EMULADOR
+###############################
+bar_info_2 88 553 350 25
+bar_info_2_font "impact.ttf"
+bar_info_2_color ffffff
+bar_info_2_text %emulator%
+bar_info_2_align left
+
+#BARRA QUE MOSTRA O NUMERO DO JOGO SELECIONADO/JOGOS TOTAL
+###############################
+bar_info_3 529 28 169 30
+bar_info_3_font "impact.ttf"
+bar_info_3_color fefefe
+bar_info_3_text "%selected% de %games%"
+bar_info_3_align center
+
+# BARRA DE FICHAS/TEMPO
+###############################
+bar_info_4 540 553 150 25
+bar_info_4_font "impact.ttf"
+bar_info_4_color ffffff
+bar_info_4_text "%fichas_time% "
+bar_info_4_align right
+
+# BARRA DE FICHAS/TEMPO
+###############################
+bar_info_Coin 685 553 110 25
+bar_info_Coin_font "impact.ttf"
+bar_info_Coin_color 1E9927
+bar_info_Coin_NoCoin_color EF1C21
+bar_info_Coin_text "%contador%"
+bar_info_Coin_align left
+
+
+# MENU
+########
+menu_font_path "impact.ttf"
+menu_font_size 19
+menu_title_color black FFFFFF
+menu_font_color black FFFFFF
+menu_font_select_color FFFFFF 247ef0
+
+

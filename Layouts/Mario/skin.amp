@@ -1,0 +1,104 @@
+######################################################
+# Layout: "Wdiversões - PedroWarlock."
+# AdvMenuPlus: >= 2016.04.19
+# Resolucion: 800x600
+# Creador/adaptador: PEDROWARLOCK
+######################################################
+# ORIENTACION - MODO DA TELA QUE SERÁ MOSTRADO O EMULADOR -VERTICAL/HORIZONTAL
+###############
+orientation 
+
+# HELP - IMAGEM OU MNG QUE SERÁ MOSTRADO NO HELP DO EMULADOR
+########
+help_image_path 
+
+# START - IMAGEM OU MNG QUE SERÁ MOSTRADO ANTES DE CARREGAR O JOGO
+#########
+start_image_path 
+
+# FUNDO
+#########
+background_image_path "./mario/arcade.png"
+background_color 000000
+
+# CONFIGURAÇÃO DA LISTA DE SELEÇÃO
+###########
+list_pos_size "35 125 308 360"
+list_font_path "impact.ttf"
+list_font_size 22
+list_font_color ffffff
+list_font_select_color 000000 ffffff 1.0
+list_rows 10
+list_cols 1
+list_selected_pos 5
+list_align center
+list_diagonal 
+
+# SCROLL - BARRA DE DESPLAZAMIENTO VERTICAL
+###########################################
+scroll_pos_size
+scroll_color
+
+# JANELA QUE MOSTRA OS SNAPS DO JOGO
+##################################
+win_snaps 453 149 280 240
+#win_color none
+
+
+# BARRA QUE MOSTRA NOME DA ROM COMPLETA
+###############################
+bar_info_1 1 72 408 23
+bar_info_1_font "impact.ttf"
+bar_info_1_color 0087F4
+bar_info_1_text "%description%"
+bar_info_1_align center
+
+
+# CONTADOR GERAL
+###############################
+bar_info_2 130 520 100 16
+bar_info_2_font "impact.ttf"
+bar_info_2_color FFFFFF
+bar_info_2_text "%contador_geral%"
+bar_info_2_align center
+
+
+# BARRA DE FICHAS/TEMPO
+###############################
+bar_info_Coin 430 477 310 30
+bar_info_Coin_font "impact.ttf"
+bar_info_Coin_color FFFFFF
+bar_info_Coin_NoCoin_color FFFFFF
+bar_info_Coin_text "%fichas_time% %contador%"
+bar_info_Coin_align center
+
+
+
+#BARRA QUE MOSTRA O NUMERO DO JOGO SELECIONADO/JOGOS TOTAL
+###############################
+bar_info_4 678 75 105 23
+bar_info_4_font "impact.ttf"
+bar_info_4_color fefefe
+bar_info_4_text "%selected% / %games%"
+bar_info_4_align center
+
+#BARRA QUE MOSTRA O NOME DO EMULADOR ATUAL
+###############################
+bar_info_3 415 416 360 23
+bar_info_3_font "impact.ttf"
+bar_info_3_color 0087F4
+bar_info_3_text %emulator%
+bar_info_3_align center
+
+
+
+# MENU
+########
+menu_font_path "impact.ttf"
+menu_font_size 19
+menu_title_color black FFFFFF
+menu_font_color black FFFFFF
+menu_font_select_color FFFFFF 247ef0
+
+
+
