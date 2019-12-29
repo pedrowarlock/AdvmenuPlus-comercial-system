@@ -5,6 +5,7 @@
 
 + +Donate = +Project
 + Help the project with donations, so it stays under development
+
 Meta Source Mame R$56/R$400
 
 Help the project with your star 
