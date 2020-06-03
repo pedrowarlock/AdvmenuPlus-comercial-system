@@ -770,7 +770,12 @@ static bool config_load_iterator_emu(adv_conf* config_context, const string& tag
 		//Verifica se o emulador está removido ou adicionado ao sistema
 		int Ret=0;
 		char buffer1[100];
-		Ret = GetPrivateProfileStringA("REMOVER_EMULADOR",a0.c_str(),"0", buffer1, 100, ".\\advmenu.ini"); 
+		
+		string move1 = ".\\ini\\";
+		move1 += a0.c_str();
+		move1 += ".ini";
+		Ret = GetPrivateProfileStringA("configuracao","OCULTAR","0", buffer1, 100, move1.c_str()); 
+		//Ret = GetPrivateProfileStringA("OCULTAR",a0.c_str(),"0", buffer1, 100, move1.c_str()); 
 		if (Ret){ //warlock
 			if (atoi(buffer1) <= 0) {
 				emu.insert(emu.end(), e);
