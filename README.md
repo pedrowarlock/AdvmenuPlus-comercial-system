@@ -6,7 +6,11 @@
 + +Donate = +Project
 + Help the project with donations, so it stays under development
 
-Meta Source Mame R$56/R$400
+Meta Source Mame R$156/R$400
+
+  #Colaboradores do projeto:
+- Atalibas
+
 
 Help the project with your star 
 ![alt text](https://imgur.com/Mrz54Pt.png)
