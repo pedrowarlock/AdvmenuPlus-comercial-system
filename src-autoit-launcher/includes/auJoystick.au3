@@ -215,7 +215,7 @@ Func _JOY_UPDATE($iKJ1)
 	Local $iJ = _JOY_GET_NUMBER()
 	if $iJ <= 0 then Return SetError(1)
 
-	for $i=0 To $iJ
+	for $i=0 To $iJ-1
 		_SDL_JoystickUpdate($iKJ1[$i])
 	Next
 	Return True
