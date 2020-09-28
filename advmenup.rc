@@ -5,8 +5,8 @@ device_video auto
 device_video_interlace no
 #*************************************************************
 #FULLSCREEN / WINDOW
-#device_video_output fullscreen
-device_video_output window
+device_video_output fullscreen
+#device_video_output window
 #*************************************************************
 misc_quiet yes
 misc_hidedesktop yes
@@ -17,7 +17,7 @@ event_repeat 150 20
 #*************************************************************
 #Salva ao fechar
 #config restore_at_idle 
-#Não salva ao fechar
+#NÃ£o salva ao fechar
 #config save_at_exit
 #*************************************************************
 menu_systems_background none
@@ -50,8 +50,8 @@ preview_expand 3.0
 idle_screensaver 120 20 
 idle_screensaver_preview snap
 #*******************************************************************
-#formato em que a lista poderá ser vista
-#mode_skip - Lista de skins e visualizações que não aparecerá na tela -#custom-
+#formato em que a lista poderÃ¡ ser vista
+#mode_skip - Lista de skins e visualizaÃ§Ãµes que nÃ£o aparecerÃ¡ na tela -#custom-
 #*******************************************************************
 mode_skip tile_small full full_mixed text list_mixed tile_normal tile_big tile_enormous tile_giant tile_icon tile_marquee tile_tiny list
 mode layout
@@ -148,7 +148,7 @@ emulator_altss "JogosDeLuta" "..\..\snap\arcade;..\mng"
 emulator_roms_filter "JogosDeLuta" "*.zip"
 emulator_layout "JogosDeLuta" ".\Layouts\JogosDeLuta.amp"
 #***********************************************
-#emulador TAITO TYPE X²
+#emulador TAITO TYPE XÂ²
 #*********************************************** 
 emulator "TAITOTYPEX" generic "GameLauncher.exe" "%p"
 emulator_roms "TAITOTYPEX" ".\JOGOS\taito"
